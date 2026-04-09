@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>采购订单 - 进销存系统</title>
+    <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="header-left">
+            <span class="back-btn" style="cursor: pointer;">←</span>
+            <span class="header-title">采购订单</span>
+        </div>
+        <div class="header-right">
+            <div class="header-icon">🔍</div>
+            <div class="header-icon">➕</div>
+        </div>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- 标签页 -->
+        <div class="tabs">
+            <div class="tab active">全部</div>
+            <div class="tab">待审核</div>
+            <div class="tab">待入库</div>
+            <div class="tab">已完成</div>
+        </div>
+
+        <!-- 搜索栏 -->
+        <div class="search-bar">
+            <span>🔍</span>
+            <input type="text" placeholder="搜索订单号、供应商...">
+        </div>
+
+        <!-- 订单列表 -->
+        <div class="order-card">
+            <div class="order-header">
+                <span class="order-id">PO20260402001</span>
+                <span class="order-status status-warning">待审核</span>
+            </div>
+            <div class="order-body">
+                <div class="order-row">
+                    <span class="order-label">供应商</span>
+                    <span class="order-value">深圳科技有限公司</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">采购商品</span>
+                    <span class="order-value">笔记本电脑 × 20</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">申请时间</span>
+                    <span class="order-value">2026-04-02 14:30</span>
+                </div>
+            </div>
+            <div class="order-footer">
+                <span class="order-amount">¥144,000</span>
+                <div class="order-actions">
+                    <button class="btn btn-sm btn-secondary" onclick="showToast('已驳回')">驳回</button>
+                    <button class="btn btn-sm btn-primary" onclick="showToast('审核通过')">审核</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card">
+            <div class="order-header">
+                <span class="order-id">PO20260402002</span>
+                <span class="order-status status-info">待入库</span>
+            </div>
+            <div class="order-body">
+                <div class="order-row">
+                    <span class="order-label">供应商</span>
+                    <span class="order-value">广州数码商贸</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">采购商品</span>
+                    <span class="order-value">无线鼠标 × 100</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">预计到货</span>
+                    <span class="order-value">2026-04-05</span>
+                </div>
+            </div>
+            <div class="order-footer">
+                <span class="order-amount">¥9,800</span>
+                <div class="order-actions">
+                    <button class="btn btn-sm btn-primary" onclick="showToast('已确认入库')">入库</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card">
+            <div class="order-header">
+                <span class="order-id">PO20260402003</span>
+                <span class="order-status status-success">已完成</span>
+            </div>
+            <div class="order-body">
+                <div class="order-row">
+                    <span class="order-label">供应商</span>
+                    <span class="order-value">北京电子设备公司</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">采购商品</span>
+                    <span class="order-value">机械键盘 × 50</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">入库时间</span>
+                    <span class="order-value">2026-04-01 15:20</span>
+                </div>
+            </div>
+            <div class="order-footer">
+                <span class="order-amount">¥15,950</span>
+                <div class="order-actions">
+                    <button class="btn btn-sm btn-secondary">详情</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card">
+            <div class="order-header">
+                <span class="order-id">PO20260402004</span>
+                <span class="order-status status-success">已完成</span>
+            </div>
+            <div class="order-body">
+                <div class="order-row">
+                    <span class="order-label">供应商</span>
+                    <span class="order-value">上海办公用品</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">采购商品</span>
+                    <span class="order-value">A4打印纸 × 500</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">入库时间</span>
+                    <span class="order-value">2026-03-30 10:00</span>
+                </div>
+            </div>
+            <div class="order-footer">
+                <span class="order-amount">¥15,750</span>
+                <div class="order-actions">
+                    <button class="btn btn-sm btn-secondary">详情</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载更多 -->
+        <div class="load-more">点击加载更多...</div>
+    </main>
+
+    <!-- 浮动按钮 -->
+    <button class="fab" onclick="showToast('新建采购订单')">+</button>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav"></nav>
+
+    <script src="js/mobile.js"></script>
+    <script>
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

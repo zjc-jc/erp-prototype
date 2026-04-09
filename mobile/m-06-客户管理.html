@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>客户管理 - 进销存系统</title>
+    <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="header-left">
+            <span class="header-title">客户管理</span>
+        </div>
+        <div class="header-right">
+            <div class="header-icon">🔍</div>
+        </div>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- 搜索栏 -->
+        <div class="search-bar">
+            <span>🔍</span>
+            <input type="text" placeholder="搜索客户...">
+        </div>
+
+        <!-- 客户列表 -->
+        <div class="customer-list">
+            <div class="list-card" onclick="openModal('detailModal')">
+                <div class="list-card-header">
+                    <span class="list-card-id">CUS001</span>
+                    <span class="order-status status-approved">合作中</span>
+                </div>
+                <div class="list-card-body">
+                    <div class="list-card-row">
+                        <span class="list-card-label">客户名称</span>
+                        <span class="list-card-value">上海电子科技有限公司</span>
+                    </div>
+                    <div class="list-card-row">
+                        <span class="list-card-label">联系人</span>
+                        <span class="list-card-value">王经理 · 021-8888****</span>
+                    </div>
+                    <div class="list-card-row">
+                        <span class="list-card-label">税号</span>
+                        <span class="list-card-value" style="font-size: 12px; color: #667eea;">91310000MA1K4LXE2X</span>
+                    </div>
+                    <div class="list-card-row">
+                        <span class="list-card-label">开户银行</span>
+                        <span class="list-card-value">中国银行浦东支行</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-card">
+                <div class="list-card-header">
+                    <span class="list-card-id">CUS002</span>
+                    <span class="order-status status-approved">合作中</span>
+                </div>
+                <div class="list-card-body">
+                    <div class="list-card-row">
+                        <span class="list-card-label">客户名称</span>
+                        <span class="list-card-value">北京商贸集团</span>
+                    </div>
+                    <div class="list-card-row">
+                        <span class="list-card-label">联系人</span>
+                        <span class="list-card-value">李总监 · 010-6666****</span>
+                    </div>
+                    <div class="list-card-row">
+                        <span class="list-card-label">税号</span>
+                        <span class="list-card-value" style="font-size: 12px; color: #667eea;">91110105MA01WXXX0X</span>
+                    </div>
+                    <div class="list-card-row">
+                        <span class="list-card-label">开户银行</span>
+                        <span class="list-card-value">工商银行朝阳支行</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-card">
+                <div class="list-card-header">
+                    <span class="list-card-id">CUS003</span>
+                    <span class="order-status status-warning">意向客户</span>
+                </div>
+                <div class="list-card-body">
+                    <div class="list-card-row">
+                        <span class="list-card-label">客户名称</span>
+                        <span class="list-card-value">深圳数码科技</span>
+                    </div>
+                    <div class="list-card-row">
+                        <span class="list-card-label">联系人</span>
+                        <span class="list-card-value">张主管 · 0755-8888****</span>
+                    </div>
+                    <div class="list-card-row">
+                        <span class="list-card-label">税号</span>
+                        <span class="list-card-value" style="font-size: 12px; color: #667eea;">91440300MA5DXXX1X0</span>
+                    </div>
+                    <div class="list-card-row">
+                        <span class="list-card-label">开户银行</span>
+                        <span class="list-card-value">招商银行南山支行</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-card">
+                <div class="list-card-header">
+                    <span class="list-card-id">CUS004</span>
+                    <span class="order-status status-approved">合作中</span>
+                </div>
+                <div class="list-card-body">
+                    <div class="list-card-row">
+                        <span class="list-card-label">客户名称</span>
+                        <span class="list-card-value">广州办公用品有限公司</span>
+                    </div>
+                    <div class="list-card-row">
+                        <span class="list-card-label">联系人</span>
+                        <span class="list-card-value">陈经理 · 020-3333****</span>
+                    </div>
+                    <div class="list-card-row">
+                        <span class="list-card-label">税号</span>
+                        <span class="list-card-value" style="font-size: 12px; color: #667eea;">91440106MA5A0XXX00</span>
+                    </div>
+                    <div class="list-card-row">
+                        <span class="list-card-label">开户银行</span>
+                        <span class="list-card-value">建设银行天河支行</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 浮动按钮 -->
+    <button class="fab" onclick="openModal('addModal')">+</button>
+
+    <!-- 新增客户弹窗 -->
+    <div id="addModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">新增客户</span>
+                <button class="modal-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">客户编号</label>
+                    <input type="text" class="form-input" placeholder="自动生成" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">客户名称</label>
+                    <input type="text" class="form-input" placeholder="公司全称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">联系人</label>
+                    <input type="text" class="form-input" placeholder="联系人姓名">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">联系电话</label>
+                    <input type="tel" class="form-input" placeholder="手机号码">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">客户类型</label>
+                    <select class="form-select">
+                        <option>企业客户</option>
+                        <option>个人客户</option>
+                        <option>政府机构</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">详细地址</label>
+                    <textarea class="form-textarea" placeholder="详细街道地址"></textarea>
+                </div>
+                
+                <!-- 发票信息 -->
+                <div style="margin: 16px 0; padding-top: 16px; border-top: 1px solid #f0f0f0;">
+                    <div style="font-size: 14px; font-weight: 600; color: #667eea; margin-bottom: 12px;">📄 发票信息</div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">纳税人识别号（税号）</label>
+                    <input type="text" class="form-input" placeholder="18位统一社会信用代码" maxlength="18">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">发票抬头</label>
+                    <input type="text" class="form-input" placeholder="默认与客户名称相同">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">开户银行</label>
+                    <input type="text" class="form-input" placeholder="银行名称及支行">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">银行账号</label>
+                    <input type="text" class="form-input" placeholder="银行账号">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">注册地址</label>
+                    <input type="text" class="form-input" placeholder="税务登记地址">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">注册电话</label>
+                    <input type="text" class="form-input" placeholder="税务登记电话">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addModal')">取消</button>
+                <button class="btn btn-primary" onclick="showToast('保存成功'); closeModal('addModal');">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav"></nav>
+
+    <script src="js/mobile.js"></script>
+</body>
+</html>

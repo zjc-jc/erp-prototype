@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>销售发票管理 - 进销存系统</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+        .stat-card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 20px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+        .stat-card.total::before { background: linear-gradient(90deg, #667eea, #764ba2); }
+        .stat-card.pending::before { background: linear-gradient(90deg, #FF9800, #FFB74D); }
+        .stat-card-issued::before { background: linear-gradient(90deg, #4CAF50, #81C784); }
+        .stat-card.received::before { background: linear-gradient(90deg, #2196F3, #64B5F6); }
+        .stat-icon { position: absolute; right: 16px; top: 16px; font-size: 36px; opacity: 0.15; }
+        .stat-label { font-size: 13px; color: #666; margin-bottom: 6px; }
+        .stat-value { font-size: 24px; font-weight: 700; color: #1a1a1a; }
+        
+        .table-container { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .table-toolbar { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .table-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+        .table-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .filter-select { padding: 8px 12px; border: 1px solid #e8e8e8; border-radius: 6px; font-size: 14px; background: white; min-width: 120px; }
+        .filter-input { padding: 8px 12px; border: 1px solid #e8e8e8; border-radius: 6px; font-size: 14px; min-width: 160px; }
+        
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-pending { background: #fff3e0; color: #f57c00; }
+        .status-issued { background: #e8f5e9; color: #388e3c; }
+        .status-sent { background: #e3f2fd; color: #1976d2; }
+        .status-received { background: #f3e5f5; color: #7b1fa2; }
+        
+        .invoice-type { padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+        .type-special { background: #e3f2fd; color: #1976d2; }
+        .type-normal { background: #f5f5f5; color: #666; }
+        .type-electronic { background: #e8f5e9; color: #388e3c; }
+        
+        .amount { font-weight: 600; color: #d32f2f; }
+        .link-text { color: #667eea; text-decoration: none; cursor: pointer; }
+        .link-text:hover { text-decoration: underline; }
+        
+        .detail-section { margin-top: 20px; }
+        .detail-title { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .detail-item { padding: 12px; background: #f8f9fa; border-radius: 8px; }
+        .detail-label { font-size: 12px; color: #999; margin-bottom: 4px; }
+        .detail-value { font-size: 14px; color: #333; font-weight: 500; }
+        
+        .merge-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; background: #e3f2fd; color: #1976d2; border-radius: 4px; font-size: 11px; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar"></aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="breadcrumb"></div>
+            <div class="toolbar">
+                <button class="btn" data-action="refresh">🔄 刷新</button>
+                <button class="btn" data-action="export">📤 导出</button>
+                <button class="btn" onclick="openModal('mergeModal')">📑 合并开票</button>
+                <button class="btn btn-primary" onclick="openModal('invoiceModal')">➕ 申请开票</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <!-- 统计卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <span class="stat-icon">📄</span>
+                    <div class="stat-label">本月销项发票</div>
+                    <div class="stat-value">128</div>
+                </div>
+                <div class="stat-card pending">
+                    <span class="stat-icon">⏳</span>
+                    <div class="stat-label">待开票</div>
+                    <div class="stat-value">15</div>
+                </div>
+                <div class="stat-card issued">
+                    <span class="stat-icon">✅</span>
+                    <div class="stat-label">已开票</div>
+                    <div class="stat-value">98</div>
+                </div>
+                <div class="stat-card received">
+                    <span class="stat-icon">📮</span>
+                    <div class="stat-label">销项税额合计</div>
+                    <div class="stat-value">¥234,560</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <div class="table-title">销售发票列表（销项发票）</div>
+                    <div class="table-actions">
+                        <select class="filter-select">
+                            <option value="">全部状态</option>
+                            <option value="pending">待开票</option>
+                            <option value="issued">已开票</option>
+                            <option value="sent">已寄出</option>
+                            <option value="received">客户已签收</option>
+                        </select>
+                        <select class="filter-select">
+                            <option value="">发票类型</option>
+                            <option>增值税专用发票</option>
+                            <option>普通发票</option>
+                            <option>电子发票</option>
+                        </select>
+                        <input type="text" class="filter-input" placeholder="🔍 搜索发票号/客户...">
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 120px;">发票编号</th>
+                                <th style="width: 80px;">类型</th>
+                                <th style="width: 140px;">客户名称</th>
+                                <th style="width: 100px;">关联订单</th>
+                                <th style="width: 90px;">开票日期</th>
+                                <th style="width: 100px;">发票金额</th>
+                                <th style="width: 80px;">税额</th>
+                                <th style="width: 100px;">价税合计</th>
+                                <th style="width: 100px;">发票状态</th>
+                                <th style="width: 100px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><a class="link-text">SI2026040201</a></td>
+                                <td><span class="invoice-type type-special">专票</span></td>
+                                <td>北京科技有限公司</td>
+                                <td>
+                                    <a class="link-text">SO2026040201</a>
+                                    <span class="merge-tag">合并</span>
+                                </td>
+                                <td>2026-04-02</td>
+                                <td>¥113,716.81</td>
+                                <td>¥14,783.19</td>
+                                <td class="amount">¥128,500</td>
+                                <td><span class="status-badge status-issued">✓ 已开票</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                    <button class="btn btn-sm">寄出</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a class="link-text">SI2026040202</a></td>
+                                <td><span class="invoice-type type-electronic">电子</span></td>
+                                <td>上海贸易集团</td>
+                                <td><a class="link-text">SO2026040202</a></td>
+                                <td>2026-04-02</td>
+                                <td>¥46,460.18</td>
+                                <td>¥6,019.82</td>
+                                <td class="amount">¥52,480</td>
+                                <td><span class="status-badge status-sent">📮 已寄出</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                    <button class="btn btn-sm">物流</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a class="link-text">SI2026040101</a></td>
+                                <td><span class="invoice-type type-special">专票</span></td>
+                                <td>深圳创新科技</td>
+                                <td><a class="link-text">SO2026040101</a></td>
+                                <td>2026-04-01</td>
+                                <td>¥138,230.09</td>
+                                <td>¥17,969.91</td>
+                                <td class="amount">¥156,200</td>
+                                <td><span class="status-badge status-received">✅ 已签收</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a class="link-text">SI2026033101</a></td>
+                                <td><span class="invoice-type type-normal">普票</span></td>
+                                <td>杭州电子商务有限公司</td>
+                                <td><a class="link-text">SO2026033101</a></td>
+                                <td>2026-03-31</td>
+                                <td>¥7,646.02</td>
+                                <td>¥993.98</td>
+                                <td class="amount">¥8,640</td>
+                                <td><span class="status-badge status-received">✅ 已签收</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>-</td>
+                                <td><span class="invoice-type type-special">专票</span></td>
+                                <td>成都软件开发公司</td>
+                                <td><a class="link-text">SO2026032901</a></td>
+                                <td>-</td>
+                                <td>¥31,681.42</td>
+                                <td>¥4,118.58</td>
+                                <td class="amount">¥35,800</td>
+                                <td><span class="status-badge status-pending">⏳ 待开票</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary">开票</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><a class="link-text">SI2026032501</a></td>
+                                <td><span class="invoice-type type-electronic">电子</span></td>
+                                <td>武汉网络科技公司</td>
+                                <td><a class="link-text">SO2026032501</a></td>
+                                <td>2026-03-25</td>
+                                <td style="text-decoration: line-through; color: #999;">¥10,619.47</td>
+                                <td style="text-decoration: line-through; color: #999;">¥1,380.53</td>
+                                <td style="text-decoration: line-through; color: #999;">¥12,000</td>
+                                <td><span class="status-badge" style="background: #ffebee; color: #d32f2f;">已作废</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-info">显示 1-6 条，共 128 条记录</div>
+                    <div class="pagination-controls">
+                        <button class="page-btn">◀</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">...</button>
+                        <button class="page-btn">22</button>
+                        <button class="page-btn">▶</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 申请开票弹窗 -->
+    <div class="modal-overlay" id="invoiceModal">
+        <div class="modal" style="width: 800px;">
+            <div class="modal-header">
+                <h3 class="modal-title">📝 申请开票（销项发票）</h3>
+                <button class="modal-close" data-action="close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label"><span style="color:#f44336">*</span> 客户名称</label>
+                        <select class="form-input" onchange="loadCustomerInfo(this)">
+                            <option value="">请选择客户</option>
+                            <option>北京科技有限公司</option>
+                            <option>上海贸易集团</option>
+                            <option>深圳创新科技</option>
+                            <option>杭州电子商务有限公司</option>
+                            <option>广州制造有限公司</option>
+                            <option>成都软件开发公司</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">客户税号</label>
+                        <input type="text" class="form-input" id="customerTaxNo" placeholder="自动带出" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label"><span style="color:#f44336">*</span> 发票类型</label>
+                        <select class="form-input">
+                            <option>增值税专用发票</option>
+                            <option>普通发票</option>
+                            <option>电子发票</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field" style="flex: 2;">
+                        <label class="form-label"><span style="color:#f44336">*</span> 关联销售订单</label>
+                        <select class="form-input" multiple style="height: 100px;">
+                            <option>SO2026040201 - 北京科技 - ¥128,500 [已完成]</option>
+                            <option>SO2026040202 - 上海贸易 - ¥52,480 [待发货]</option>
+                            <option>SO2026040101 - 深圳创新 - ¥156,200 [已发货]</option>
+                            <option>SO2026032901 - 成都软件 - ¥35,800 [已完成]</option>
+                        </select>
+                        <span style="font-size: 12px; color: #999;">支持多选（合并开票），仅显示已完成/已发货订单</span>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label"><span style="color:#f44336">*</span> 发票金额（不含税）</label>
+                        <input type="number" class="form-input" id="invoiceAmount" value="0" step="0.01" onchange="calcInvoiceTax()">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label"><span style="color:#f44336">*</span> 税率</label>
+                        <select class="form-input" id="taxRate" onchange="calcInvoiceTax()">
+                            <option value="13">13%</option>
+                            <option value="9">9%</option>
+                            <option value="6">6%</option>
+                            <option value="3">3%</option>
+                            <option value="0">0%（免税）</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">税额</label>
+                        <input type="text" class="form-input" id="taxAmount" value="0.00" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">价税合计</label>
+                        <input type="text" class="form-input" id="totalAmount" value="0.00" readonly style="font-weight: 600; color: #d32f2f;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">收件人</label>
+                        <input type="text" class="form-input" placeholder="纸质发票收件人">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">联系电话</label>
+                        <input type="text" class="form-input" placeholder="联系电话">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">邮寄地址</label>
+                        <input type="text" class="form-input" placeholder="纸质发票邮寄地址">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label">备注说明</label>
+                    <textarea class="form-textarea" placeholder="特殊情况说明"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-action="close-modal">取消</button>
+                <button class="btn">💾 保存草稿</button>
+                <button class="btn btn-primary">✅ 提交申请</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 合并开票弹窗 -->
+    <div class="modal-overlay" id="mergeModal">
+        <div class="modal" style="width: 900px;">
+            <div class="modal-header">
+                <h3 class="modal-title">📑 合并开票</h3>
+                <button class="modal-close" data-action="close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label"><span style="color:#f44336">*</span> 选择客户</label>
+                        <select class="form-input" onchange="loadMergeOrders(this)">
+                            <option value="">请选择客户</option>
+                            <option>北京科技有限公司</option>
+                            <option>上海贸易集团</option>
+                            <option>深圳创新科技</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label"><span style="color:#f44336">*</span> 发票类型</label>
+                        <select class="form-input">
+                            <option>增值税专用发票</option>
+                            <option>普通发票</option>
+                            <option>电子发票</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-title">选择待开票订单（可多选）</div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="width: 40px; padding: 10px;"><input type="checkbox" onchange="toggleAllOrders(this)"></th>
+                                <th style="padding: 10px; text-align: left;">订单编号</th>
+                                <th style="padding: 10px; text-align: left;">订单日期</th>
+                                <th style="padding: 10px; text-align: right;">订单金额</th>
+                                <th style="padding: 10px; text-align: center;">订单状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mergeOrderList">
+                            <tr style="border-bottom: 1px solid #f0f0f0;">
+                                <td style="padding: 10px;"><input type="checkbox" class="order-check" value="128500" onchange="calcMergeTotal()"></td>
+                                <td style="padding: 10px;">SO2026040201</td>
+                                <td style="padding: 10px;">2026-04-02</td>
+                                <td style="padding: 10px; text-align: right;" class="amount">¥128,500</td>
+                                <td style="padding: 10px; text-align: center;"><span class="status-badge status-issued">已完成</span></td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #f0f0f0;">
+                                <td style="padding: 10px;"><input type="checkbox" class="order-check" value="35800" onchange="calcMergeTotal()"></td>
+                                <td style="padding: 10px;">SO2026032901</td>
+                                <td style="padding: 10px;">2026-03-29</td>
+                                <td style="padding: 10px; text-align: right;" class="amount">¥35,800</td>
+                                <td style="padding: 10px; text-align: center;"><span class="status-badge status-issued">已完成</span></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: #f0f4ff; font-weight: 600;">
+                                <td colspan="3" style="padding: 12px; text-align: right;">合并开票金额：</td>
+                                <td style="padding: 12px; text-align: right;" class="amount" id="mergeTotalAmount">¥0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-action="close-modal">取消</button>
+                <button class="btn btn-primary">✅ 确认合并开票</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发票详情弹窗 -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal" style="width: 900px;">
+            <div class="modal-header">
+                <h3 class="modal-title">📄 发票详情 - SI2026040201</h3>
+                <button class="modal-close" data-action="close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">发票类型</div>
+                        <div class="detail-value">增值税专用发票</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">客户名称</div>
+                        <div class="detail-value">北京科技有限公司</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">客户税号</div>
+                        <div class="detail-value">91110108MA01WXXXX</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">开票日期</div>
+                        <div class="detail-value">2026-04-02</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">发票金额</div>
+                        <div class="detail-value" style="color: #d32f2f;">¥113,716.81</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">税额（13%）</div>
+                        <div class="detail-value">¥14,783.19</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">价税合计</div>
+                        <div class="detail-value" style="color: #d32f2f; font-size: 18px;">¥128,500.00</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">开票申请人</div>
+                        <div class="detail-value">张伟</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">发票状态</div>
+                        <div class="detail-value"><span class="status-badge status-issued">✓ 已开票</span></div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-title">📎 关联订单（合并开票）</div>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="padding: 10px; text-align: left;">订单编号</th>
+                                <th style="padding: 10px; text-align: left;">下单日期</th>
+                                <th style="padding: 10px; text-align: right;">订单金额</th>
+                                <th style="padding: 10px; text-align: center;">状态</th>
+                                <th style="padding: 10px; text-align: center;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid #f0f0f0;">
+                                <td style="padding: 10px;"><a class="link-text">SO2026040201</a></td>
+                                <td style="padding: 10px;">2026-04-02</td>
+                                <td style="padding: 10px; text-align: right;" class="amount">¥128,500</td>
+                                <td style="padding: 10px; text-align: center;"><span class="status-badge status-issued">已完成</span></td>
+                                <td style="padding: 10px; text-align: center;"><button class="btn btn-sm">查看</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-title">📮 物流信息</div>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">收件人</div>
+                            <div class="detail-value">李经理</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">联系电话</div>
+                            <div class="detail-value">138****8888</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">邮寄地址</div>
+                            <div class="detail-value">北京市海淀区中关村大街XX号</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-action="close-modal">关闭</button>
+                <button class="btn">🖨️ 打印</button>
+                <button class="btn btn-primary">📥 下载电子发票</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script>
+        function calcInvoiceTax() {
+            const amount = parseFloat(document.getElementById('invoiceAmount').value) || 0;
+            const rate = parseFloat(document.getElementById('taxRate').value) || 0;
+            const tax = amount * rate / 100;
+            const total = amount + tax;
+            
+            document.getElementById('taxAmount').value = tax.toFixed(2);
+            document.getElementById('totalAmount').value = total.toFixed(2);
+        }
+        
+        function loadCustomerInfo(select) {
+            const customer = select.value;
+            const taxNos = {
+                '北京科技有限公司': '91110108MA01WXXXX',
+                '上海贸易集团': '91310115MA1K4L5XXX',
+                '深圳创新科技': '91440300MA5DXXXXX'
+            };
+            if (taxNos[customer]) {
+                document.getElementById('customerTaxNo').value = taxNos[customer];
+            }
+        }
+        
+        function toggleAllOrders(checkbox) {
+            const checks = document.querySelectorAll('.order-check');
+            checks.forEach(c => c.checked = checkbox.checked);
+            calcMergeTotal();
+        }
+        
+        function calcMergeTotal() {
+            const checks = document.querySelectorAll('.order-check:checked');
+            let total = 0;
+            checks.forEach(c => total += parseFloat(c.value) || 0);
+            document.getElementById('mergeTotalAmount').textContent = '¥' + total.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+        }
+        
+        function loadMergeOrders(select) {
+            // 模拟加载客户订单
+            console.log('加载客户订单:', select.value);
+        }
+    </script>
+</body>
+</html>

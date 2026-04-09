@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成本核算 - 进销存系统</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .table-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .table-toolbar { padding: 16px 20px; border-bottom: 1px solid #e8e8e8; display: flex; justify-content: space-between; align-items: center; }
+        .table-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+        .table-actions { display: flex; gap: 8px; align-items: center; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead { background: #f5f7fa; }
+        th { padding: 12px 16px; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #e8e8e8; white-space: nowrap; }
+        td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; }
+        tbody tr:hover { background: #f5f7ff; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-completed { background: #e8f5e9; color: #4caf50; }
+        .status-pending { background: #fff3e0; color: #ff9800; }
+        .pagination { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-top: 1px solid #e8e8e8; }
+        .pagination-info { font-size: 14px; color: #666; }
+        .pagination-controls { display: flex; gap: 8px; align-items: center; }
+        .page-btn { width: 32px; height: 32px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .page-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; }
+        .amount { font-weight: 600; color: #f44336; }
+        .modal { width: 600px; max-width: 95%; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar"></aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="breadcrumb"></div>
+            <div class="toolbar">
+                <button class="btn" data-action="refresh">🔄 刷新</button>
+                <button class="btn" data-action="export">📤 导出</button>
+                <button class="btn btn-primary" onclick="openModal('costModal')">➕ 新建核算单</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <div class="table-title">成本核算列表</div>
+                    <div class="table-actions">
+                        <input type="text" placeholder="🔍 搜索商品或单号..." style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; width: 180px;">
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th style="width:50px"><input type="checkbox"></th><th style="width:120px">核算单号</th><th>商品名称</th><th>核算期间</th><th style="width:80px">数量</th><th style="width:100px">单位成本</th><th style="width:100px">总成本</th><th style="width:100px">核算方法</th><th style="width:80px">状态</th></tr></thead>
+                        <tbody>
+                            <tr><td><input type="checkbox"></td><td>CS202604001</td><td>联想 ThinkPad X1 Carbon</td><td>2026-04</td><td>50</td><td>¥7,800</td><td class="amount">¥390,000</td><td>加权平均法</td><td><span class="status-badge status-completed">✓ 已完成</span></td></tr>
+                            <tr><td><input type="checkbox"></td><td>CS202604002</td><td>戴尔显示器 27 寸</td><td>2026-04</td><td>120</td><td>¥1,650</td><td class="amount">¥198,000</td><td>加权平均法</td><td><span class="status-badge status-completed">✓ 已完成</span></td></tr>
+                            <tr><td><input type="checkbox"></td><td>CS202604003</td><td>罗技键盘鼠标套装</td><td>2026-04</td><td>300</td><td>¥245</td><td class="amount">¥73,500</td><td>先进先出法</td><td><span class="status-badge status-pending">⏳ 审核中</span></td></tr>
+                            <tr><td><input type="checkbox"></td><td>CS202604004</td><td>机械硬盘 4TB</td><td>2026-04</td><td>80</td><td>¥580</td><td class="amount">¥46,400</td><td>加权平均法</td><td><span class="status-badge status-completed">✓ 已完成</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-info">显示 1-4 条，共 156 条记录</div>
+                    <div class="pagination-controls"><button class="page-btn">◀</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">▶</button></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="costModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">新建成本核算</h3>
+                <button class="modal-close" data-action="close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-field"><label class="form-label">商品名称 *</label><select class="form-input"><option value="">请选择商品</option><option>联想 ThinkPad X1 Carbon</option><option>戴尔显示器 27 寸</option><option>罗技键盘鼠标套装</option></select></div>
+                    <div class="form-field"><label class="form-label">核算期间 *</label><input type="month" class="form-input" value="2026-04"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field"><label class="form-label">核算数量 *</label><input type="number" class="form-input" placeholder="请输入数量"></div>
+                    <div class="form-field"><label class="form-label">核算方法 *</label><select class="form-input"><option>加权平均法</option><option>先进先出法</option><option>个别计价法</option></select></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field"><label class="form-label">单位成本</label><input type="number" class="form-input" placeholder="自动计算" step="0.01" disabled></div>
+                    <div class="form-field"><label class="form-label">总成本</label><input type="number" class="form-input" placeholder="自动计算" step="0.01" disabled></div>
+                </div>
+                <div class="form-field"><label class="form-label">备注</label><textarea class="form-textarea" placeholder="请输入备注"></textarea></div>
+                <div class="form-actions"><button class="btn" data-action="close-modal">取消</button><button class="btn btn-primary">提交核算</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+</body>
+</html>

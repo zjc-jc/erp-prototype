@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>采购退货 - 进销存系统</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .table-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .table-toolbar { padding: 16px 20px; border-bottom: 1px solid #e8e8e8; display: flex; justify-content: space-between; align-items: center; }
+        .table-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+        .table-actions { display: flex; gap: 8px; align-items: center; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead { background: #f5f7fa; }
+        th { padding: 12px 16px; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #e8e8e8; white-space: nowrap; }
+        td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; }
+        tbody tr:hover { background: #f5f7ff; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-pending { background: #fff3e0; color: #ff9800; }
+        .status-processing { background: #e3f2fd; color: #1976d2; }
+        .status-completed { background: #e8f5e9; color: #4caf50; }
+        .status-rejected { background: #ffebee; color: #f44336; }
+        .pagination { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-top: 1px solid #e8e8e8; }
+        .pagination-info { font-size: 14px; color: #666; }
+        .pagination-controls { display: flex; gap: 8px; align-items: center; }
+        .page-btn { width: 32px; height: 32px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; }
+        .page-btn:hover { border-color: #667eea; color: #667eea; }
+        .page-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; }
+
+        /* 筛选器 */
+        .filter-select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; }
+        .filter-select:focus { outline: none; border-color: #667eea; }
+
+        /* 弹窗 */
+        .modal { width: 800px; max-width: 95%; }
+        .detail-section { margin-top: 16px; }
+        .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .detail-title { font-size: 14px; font-weight: 600; color: #333; }
+        .detail-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .detail-table th, .detail-table td { padding: 10px 12px; border: 1px solid #e8e8e8; }
+        .detail-table th { background: #f5f7fa; font-weight: 600; }
+        .detail-table input, .detail-table select { width: 100%; padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; }
+        .detail-table input:focus, .detail-table select:focus { outline: none; border-color: #667eea; }
+        .btn-delete { color: #ff4d4f; cursor: pointer; font-size: 16px; }
+        .btn-delete:hover { color: #ff7875; }
+        .btn-add-row { color: #667eea; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-add-row:hover { color: #764ba2; }
+        .detail-summary { display: flex; justify-content: flex-end; gap: 24px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e8e8e8; font-size: 14px; }
+        .detail-summary span { font-weight: 600; color: #333; }
+
+        /* 关联采购订单 */
+        .order-link { color: #667eea; text-decoration: none; }
+        .order-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar"></aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="breadcrumb"></div>
+            <div class="toolbar">
+                <button class="btn" data-action="refresh">🔄 刷新</button>
+                <button class="btn" data-action="export">📤 导出</button>
+                <button class="btn btn-primary" onclick="openModal('returnModal')">➕ 新建退货申请</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <div class="table-title">采购退货列表</div>
+                    <div class="table-actions">
+                        <select class="filter-select">
+                            <option value="">全部状态</option>
+                            <option value="pending">待审批</option>
+                            <option value="processing">处理中</option>
+                            <option value="completed">已完成</option>
+                            <option value="rejected">已拒绝</option>
+                        </select>
+                        <input type="text" placeholder="🔍 搜索退货单..." style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; width: 180px;">
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 120px;">退货单号</th>
+                                <th style="width: 120px;">采购订单</th>
+                                <th>供应商</th>
+                                <th style="width: 80px;">退货数量</th>
+                                <th style="width: 100px;">退货金额</th>
+                                <th>退货原因</th>
+                                <th style="width: 100px;">申请日期</th>
+                                <th>申请人</th>
+                                <th style="width: 80px;">状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>RT20260402001</td>
+                                <td><a href="#" class="order-link">PO20260325001</a></td>
+                                <td>联想科技有限公司</td>
+                                <td>2 台</td>
+                                <td>¥ 18,000</td>
+                                <td>质量问题 - 屏幕闪烁</td>
+                                <td>2026-04-02</td>
+                                <td>张三</td>
+                                <td><span class="status-badge status-pending">⏳ 待审批</span></td>
+                            </tr>
+                            <tr>
+                                <td>RT20260401001</td>
+                                <td><a href="#" class="order-link">PO20260320002</a></td>
+                                <td>戴尔（中国）有限公司</td>
+                                <td>5 台</td>
+                                <td>¥ 6,500</td>
+                                <td>型号错误 - 拍错型号</td>
+                                <td>2026-04-01</td>
+                                <td>李四</td>
+                                <td><span class="status-badge status-processing">🔄 处理中</span></td>
+                            </tr>
+                            <tr>
+                                <td>RT20260330001</td>
+                                <td><a href="#" class="order-link">PO20260315003</a></td>
+                                <td>罗技科技有限公司</td>
+                                <td>10 套</td>
+                                <td>¥ 2,500</td>
+                                <td>包装破损 - 运输损坏</td>
+                                <td>2026-03-30</td>
+                                <td>王五</td>
+                                <td><span class="status-badge status-completed">✓ 已完成</span></td>
+                            </tr>
+                            <tr>
+                                <td>RT20260328001</td>
+                                <td><a href="#" class="order-link">PO20260310004</a></td>
+                                <td>惠普科技（北京）有限公司</td>
+                                <td>1 台</td>
+                                <td>¥ 2,800</td>
+                                <td>功能故障 - 打印异常</td>
+                                <td>2026-03-28</td>
+                                <td>赵六</td>
+                                <td><span class="status-badge status-completed">✓ 已完成</span></td>
+                            </tr>
+                            <tr>
+                                <td>RT20260325001</td>
+                                <td><a href="#" class="order-link">PO20260308005</a></td>
+                                <td>西部数据贸易公司</td>
+                                <td>3 块</td>
+                                <td>¥ 1,200</td>
+                                <td>质量问题 - 坏道</td>
+                                <td>2026-03-25</td>
+                                <td>张三</td>
+                                <td><span class="status-badge status-rejected">✕ 已拒绝</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-info">显示 1-5 条，共 28 条记录</div>
+                    <div class="pagination-controls">
+                        <button class="page-btn">◀</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">▶</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 新建退货弹窗 -->
+    <div class="modal-overlay" id="returnModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">新建采购退货申请</h3>
+                <button class="modal-close" data-action="close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">关联采购订单 *</label>
+                        <select class="form-input">
+                            <option value="">请选择采购订单</option>
+                            <option value="PO20260402001">PO20260402001 - 联想科技有限公司</option>
+                            <option value="PO20260401002">PO20260401002 - 戴尔（中国）有限公司</option>
+                            <option value="PO20260331003">PO20260331003 - 罗技科技有限公司</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">退货日期 *</label>
+                        <input type="date" class="form-input" value="2026-04-02">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">供应商</label>
+                        <input type="text" class="form-input" placeholder="自动带入" disabled>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">退货原因 *</label>
+                        <select class="form-input">
+                            <option value="">请选择退货原因</option>
+                            <option value="quality">质量问题</option>
+                            <option value="model">型号错误</option>
+                            <option value="damage">包装破损</option>
+                            <option value="quantity">数量不符</option>
+                            <option value="other">其他原因</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 退货明细 -->
+                <div class="detail-section">
+                    <div class="detail-header">
+                        <div class="detail-title">📦 退货明细</div>
+                        <span class="btn-add-row" onclick="addReturnRow()">➕ 添加商品</span>
+                    </div>
+                    <table class="detail-table" id="returnDetailTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 180px;">商品名称</th>
+                                <th style="width: 80px;">规格型号</th>
+                                <th style="width: 60px;">单位</th>
+                                <th style="width: 80px;">已入库</th>
+                                <th style="width: 80px;">退货数量</th>
+                                <th style="width: 100px;">单价(元)</th>
+                                <th style="width: 100px;">金额(元)</th>
+                                <th style="width: 40px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" placeholder="从订单选择"></td>
+                                <td><input type="text" placeholder="规格"></td>
+                                <td><input type="text" placeholder="单位"></td>
+                                <td><span class="stock-qty">10</span></td>
+                                <td><input type="number" value="1" min="1" onchange="calcRowAmount(this)"></td>
+                                <td><input type="number" value="0" min="0" step="0.01" onchange="calcRowAmount(this)"></td>
+                                <td><span class="row-amount">0.00</span></td>
+                                <td><span class="btn-delete" onclick="deleteRow(this)">✕</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="detail-summary">
+                        <div>合计数量：<span id="totalQty">1</span></div>
+                        <div>合计金额：<span id="totalAmount">0.00</span> 元</div>
+                    </div>
+                </div>
+
+                <div class="form-field" style="margin-top: 16px;">
+                    <label class="form-label">备注说明</label>
+                    <textarea class="form-textarea" placeholder="请详细描述退货原因和情况..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn" data-action="close-modal">取消</button>
+                    <button class="btn btn-primary">提交申请</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script>
+        // 计算行金额
+        function calcRowAmount(input) {
+            const row = input.closest('tr');
+            const qtyInput = row.querySelectorAll('input[type="number"]');
+            const qty = parseFloat(qtyInput[0].value) || 0;
+            const price = parseFloat(qtyInput[1].value) || 0;
+            row.querySelector('.row-amount').textContent = (qty * price).toFixed(2);
+            calcTotal();
+        }
+
+        // 计算合计
+        function calcTotal() {
+            const rows = document.querySelectorAll('#returnDetailTable tbody tr');
+            let totalQty = 0, totalAmount = 0;
+            rows.forEach(row => {
+                const qtyInput = row.querySelectorAll('input[type="number"]');
+                totalQty += parseFloat(qtyInput[0].value) || 0;
+                totalAmount += parseFloat(row.querySelector('.row-amount').textContent) || 0;
+            });
+            document.getElementById('totalQty').textContent = totalQty;
+            document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+        }
+
+        // 添加行
+        function addReturnRow() {
+            const tbody = document.querySelector('#returnDetailTable tbody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" placeholder="从订单选择"></td>
+                <td><input type="text" placeholder="规格"></td>
+                <td><input type="text" placeholder="单位"></td>
+                <td><span class="stock-qty">0</span></td>
+                <td><input type="number" value="1" min="1" onchange="calcRowAmount(this)"></td>
+                <td><input type="number" value="0" min="0" step="0.01" onchange="calcRowAmount(this)"></td>
+                <td><span class="row-amount">0.00</span></td>
+                <td><span class="btn-delete" onclick="deleteRow(this)">✕</span></td>
+            `;
+            tbody.appendChild(tr);
+            calcTotal();
+        }
+
+        // 删除行
+        function deleteRow(btn) {
+            const tbody = document.querySelector('#returnDetailTable tbody');
+            if (tbody.querySelectorAll('tr').length > 1) {
+                btn.closest('tr').remove();
+                calcTotal();
+            }
+        }
+    </script>
+</body>
+</html>

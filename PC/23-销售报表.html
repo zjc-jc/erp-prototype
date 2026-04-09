@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>销售报表 - 进销存系统</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        .main-content { flex: 1; display: flex; flex-direction: column; }
+        
+        /* 统计卡片 */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+        .stat-card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 24px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+        .stat-card.sales::before { background: linear-gradient(90deg, #4CAF50, #81C784); }
+        .stat-card.orders::before { background: linear-gradient(90deg, #2196F3, #64B5F6); }
+        .stat-card.customers::before { background: linear-gradient(90deg, #FF9800, #FFB74D); }
+        .stat-card.profit::before { background: linear-gradient(90deg, #9C27B0, #BA68C8); }
+        
+        .stat-icon {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 48px;
+            opacity: 0.15;
+        }
+        .stat-label { font-size: 14px; color: #666; margin-bottom: 8px; }
+        .stat-value { font-size: 28px; font-weight: 700; color: #1a1a1a; }
+        .stat-change { font-size: 12px; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+        .stat-change.up { color: #4CAF50; }
+        .stat-change.down { color: #F44336; }
+
+        /* 图表区域 */
+        .chart-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .chart-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chart-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+        .chart-body { padding: 20px; }
+        
+        /* 柱状图 */
+        .bar-chart {
+            height: 280px;
+            display: flex;
+            align-items: flex-end;
+            gap: 16px;
+            padding: 20px 0;
+        }
+        .bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .bar {
+            width: 100%;
+            max-width: 60px;
+            border-radius: 6px 6px 0 0;
+            background: linear-gradient(180deg, #4CAF50, #81C784);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        .bar:hover { opacity: 0.8; transform: scaleY(1.02); }
+        .bar-value {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+        }
+        .bar-label { font-size: 12px; color: #666; margin-top: 8px; }
+        
+        /* 饼图 */
+        .pie-chart {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+        .pie-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .pie-center-value { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+        .pie-center-label { font-size: 12px; color: #666; }
+        .pie-legend { display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .legend-color { width: 12px; height: 12px; border-radius: 3px; }
+        .legend-value { margin-left: auto; font-weight: 600; color: #1a1a1a; }
+
+        /* 排行榜 */
+        .rank-list { display: flex; flex-direction: column; gap: 12px; }
+        .rank-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .rank-item:hover { background: #f0f4ff; }
+        .rank-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+        }
+        .rank-num.gold { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .rank-num.silver { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); }
+        .rank-num.bronze { background: linear-gradient(135deg, #CD7F32, #B8860B); }
+        .rank-num.normal { background: #e8e8e8; color: #666; }
+        .rank-info { flex: 1; }
+        .rank-name { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+        .rank-sales { font-size: 12px; color: #999; margin-top: 2px; }
+        .rank-amount { font-size: 14px; font-weight: 600; color: #4CAF50; }
+
+        /* 快捷操作 */
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .quick-btn {
+            flex: 1;
+            padding: 16px;
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+        }
+        .quick-btn:hover {
+            border-color: #4CAF50;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
+        }
+        .quick-btn-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .quick-btn-icon.green { background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%); }
+        .quick-btn-icon.blue { background: linear-gradient(135deg, #2196F3 0%, #64B5F6 100%); }
+        .quick-btn-icon.orange { background: linear-gradient(135deg, #FF9800 0%, #FFB74D 100%); }
+        .quick-btn-icon.purple { background: linear-gradient(135deg, #9C27B0 0%, #BA68C8 100%); }
+        .quick-btn-text { text-align: left; }
+        .quick-btn-title { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+        .quick-btn-desc { font-size: 12px; color: #999; margin-top: 2px; }
+
+        /* 报表标签页 */
+        .report-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .report-tab {
+            padding: 12px 24px;
+            border: none;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+        .report-tab:hover { color: #4CAF50; }
+        .report-tab.active {
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            color: white;
+        }
+
+        /* 数据表格 */
+        .data-table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .table-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .table-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+        .table-wrapper { overflow-x: auto; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead { background: #f8f9fa; }
+        th { padding: 14px 16px; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #e8e8e8; }
+        td { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; color: #666; }
+        tbody tr:hover { background: #f8f9ff; }
+        
+        .amount { font-weight: 600; color: #1a1a1a; }
+        .positive { color: #4CAF50; }
+        .negative { color: #F44336; }
+        .trend-up { color: #4CAF50; }
+        .trend-down { color: #F44336; }
+
+        .period-select {
+            padding: 8px 16px;
+            border: 1px solid #e8e8e8;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        /* 报表内容切换 */
+        .report-content { display: none; }
+        .report-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar"></aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="breadcrumb"></div>
+            <div class="toolbar">
+                <button class="btn" data-action="refresh">🔄 刷新</button>
+                <button class="btn" data-action="export">📤 导出Excel</button>
+                <button class="btn" data-action="print">🖨️ 打印</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <!-- 统计卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card sales">
+                    <span class="stat-icon">💰</span>
+                    <div class="stat-label">本月销售额</div>
+                    <div class="stat-value">¥528,600</div>
+                    <div class="stat-change up">📈 ↑ 12.5% 较上月</div>
+                </div>
+                <div class="stat-card orders">
+                    <span class="stat-icon">📋</span>
+                    <div class="stat-label">本月订单数</div>
+                    <div class="stat-value">186</div>
+                    <div class="stat-change up">📈 ↑ 8.3% 较上月</div>
+                </div>
+                <div class="stat-card customers">
+                    <span class="stat-icon">👥</span>
+                    <div class="stat-label">新增客户</div>
+                    <div class="stat-value">23</div>
+                    <div class="stat-change up">📈 ↑ 15.2% 较上月</div>
+                </div>
+                <div class="stat-card profit">
+                    <span class="stat-icon">💵</span>
+                    <div class="stat-label">销售毛利</div>
+                    <div class="stat-value">¥142,200</div>
+                    <div class="stat-change up">📈 ↑ 18.7% 较上月</div>
+                </div>
+            </div>
+
+            <!-- 图表区域 -->
+            <div class="chart-section">
+                <!-- 销售趋势 -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">📊 销售趋势</div>
+                        <select class="period-select">
+                            <option>近6个月</option>
+                            <option>近12个月</option>
+                            <option>本年度</option>
+                        </select>
+                    </div>
+                    <div class="chart-body">
+                        <div class="bar-chart" id="salesChart"></div>
+                    </div>
+                </div>
+
+                <!-- 客户分布 -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title">🥧 客户类型分布</div>
+                    </div>
+                    <div class="chart-body">
+                        <div class="pie-chart">
+                            <svg viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="#4CAF50" stroke-width="20" stroke-dasharray="125.66 125.66" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="#2196F3" stroke-width="20" stroke-dasharray="75.40 175.92" stroke-dashoffset="-125.66" transform="rotate(-90 50 50)"/>
+                                <circle cx="50" cy="50" r="40" fill="none" stroke="#FF9800" stroke-width="20" stroke-dasharray="50.27 200.05" stroke-dashoffset="-201.06" transform="rotate(-90 50 50)"/>
+                            </svg>
+                            <div class="pie-center">
+                                <div class="pie-center-value">89家</div>
+                                <div class="pie-center-label">客户总数</div>
+                            </div>
+                        </div>
+                        <div class="pie-legend">
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #4CAF50;"></div>
+                                <span>企业客户</span>
+                                <span class="legend-value">50%</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #2196F3;"></div>
+                                <span>经销商</span>
+                                <span class="legend-value">30%</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-color" style="background: #FF9800;"></div>
+                                <span>个人客户</span>
+                                <span class="legend-value">20%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快捷操作 -->
+            <div class="quick-actions">
+                <button class="quick-btn" onclick="alert('生成销售月报')">
+                    <div class="quick-btn-icon green">📄</div>
+                    <div class="quick-btn-text">
+                        <div class="quick-btn-title">生成销售月报</div>
+                        <div class="quick-btn-desc">自动汇总本月销售数据</div>
+                    </div>
+                </button>
+                <button class="quick-btn" onclick="alert('业绩分析')">
+                    <div class="quick-btn-icon blue">📊</div>
+                    <div class="quick-btn-text">
+                        <div class="quick-btn-title">业绩分析</div>
+                        <div class="quick-btn-desc">销售员业绩排名分析</div>
+                    </div>
+                </button>
+                <button class="quick-btn" onclick="alert('商品分析')">
+                    <div class="quick-btn-icon orange">📦</div>
+                    <div class="quick-btn-text">
+                        <div class="quick-btn-title">商品分析</div>
+                        <div class="quick-btn-desc">热销商品与滞销商品</div>
+                    </div>
+                </button>
+                <button class="quick-btn" onclick="alert('客户分析')">
+                    <div class="quick-btn-icon purple">👥</div>
+                    <div class="quick-btn-text">
+                        <div class="quick-btn-title">客户分析</div>
+                        <div class="quick-btn-desc">客户购买行为分析</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- 报表标签页 -->
+            <div class="report-tabs">
+                <button class="report-tab active" data-report="product">📦 商品销售排行</button>
+                <button class="report-tab" data-report="customer">👥 客户销售排行</button>
+                <button class="report-tab" data-report="salesman">👤 销售员业绩</button>
+                <button class="report-tab" data-report="category">📂 品类销售分析</button>
+            </div>
+
+            <!-- 商品销售排行 -->
+            <div class="data-table-container report-content active" id="product-report">
+                <div class="table-header">
+                    <div class="table-title">商品销售排行</div>
+                    <select class="period-select">
+                        <option>本月</option>
+                        <option>本季度</option>
+                        <option>本年度</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 60px">排名</th>
+                                <th>商品名称</th>
+                                <th>规格型号</th>
+                                <th>销售数量</th>
+                                <th>销售金额</th>
+                                <th>毛利</th>
+                                <th>毛利率</th>
+                                <th>环比</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span style="background: linear-gradient(135deg, #FFD700, #FFA500); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600;">1</span></td>
+                                <td>ThinkPad X1 Carbon</td>
+                                <td>i7/16G/512G</td>
+                                <td>45台</td>
+                                <td class="amount">¥449,550</td>
+                                <td class="positive">¥89,910</td>
+                                <td>20%</td>
+                                <td class="trend-up">↑ 15%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600;">2</span></td>
+                                <td>Dell U2722D 显示器</td>
+                                <td>27寸 4K</td>
+                                <td>128台</td>
+                                <td class="amount">¥384,000</td>
+                                <td class="positive">¥76,800</td>
+                                <td>20%</td>
+                                <td class="trend-up">↑ 8%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: linear-gradient(135deg, #CD7F32, #B8860B); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600;">3</span></td>
+                                <td>罗技 MX Master 3</td>
+                                <td>无线鼠标</td>
+                                <td>256个</td>
+                                <td class="amount">¥179,200</td>
+                                <td class="positive">¥53,760</td>
+                                <td>30%</td>
+                                <td class="trend-up">↑ 22%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: #e8e8e8; color: #666; padding: 4px 10px; border-radius: 12px; font-weight: 600;">4</span></td>
+                                <td>HHKB Professional</td>
+                                <td>静电容键盘</td>
+                                <td>89个</td>
+                                <td class="amount">¥160,200</td>
+                                <td class="positive">¥48,060</td>
+                                <td>30%</td>
+                                <td class="trend-down">↓ 5%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: #e8e8e8; color: #666; padding: 4px 10px; border-radius: 12px; font-weight: 600;">5</span></td>
+                                <td>iPhone 15 Pro</td>
+                                <td>256G 深空黑</td>
+                                <td>32台</td>
+                                <td class="amount">¥294,400</td>
+                                <td class="positive">¥29,440</td>
+                                <td>10%</td>
+                                <td class="trend-up">↑ 12%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 客户销售排行 -->
+            <div class="data-table-container report-content" id="customer-report">
+                <div class="table-header">
+                    <div class="table-title">客户销售排行</div>
+                    <select class="period-select">
+                        <option>本月</option>
+                        <option>本季度</option>
+                        <option>本年度</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 60px">排名</th>
+                                <th>客户名称</th>
+                                <th>客户类型</th>
+                                <th>订单数</th>
+                                <th>销售金额</th>
+                                <th>回款金额</th>
+                                <th>欠款金额</th>
+                                <th>环比</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span style="background: linear-gradient(135deg, #FFD700, #FFA500); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600;">1</span></td>
+                                <td>北京科技有限公司</td>
+                                <td><span style="background: #e8f5e9; color: #4CAF50; padding: 2px 8px; border-radius: 4px; font-size: 12px;">企业客户</span></td>
+                                <td>28</td>
+                                <td class="amount">¥156,800</td>
+                                <td class="positive">¥140,000</td>
+                                <td class="negative">¥16,800</td>
+                                <td class="trend-up">↑ 18%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600;">2</span></td>
+                                <td>上海贸易集团</td>
+                                <td><span style="background: #e3f2fd; color: #2196F3; padding: 2px 8px; border-radius: 4px; font-size: 12px;">经销商</span></td>
+                                <td>45</td>
+                                <td class="amount">¥142,500</td>
+                                <td class="positive">¥142,500</td>
+                                <td>¥0</td>
+                                <td class="trend-up">↑ 25%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: linear-gradient(135deg, #CD7F32, #B8860B); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600;">3</span></td>
+                                <td>深圳创新科技</td>
+                                <td><span style="background: #e8f5e9; color: #4CAF50; padding: 2px 8px; border-radius: 4px; font-size: 12px;">企业客户</span></td>
+                                <td>18</td>
+                                <td class="amount">¥98,600</td>
+                                <td class="positive">¥80,000</td>
+                                <td class="negative">¥18,600</td>
+                                <td class="trend-up">↑ 10%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: #e8e8e8; color: #666; padding: 4px 10px; border-radius: 12px; font-weight: 600;">4</span></td>
+                                <td>杭州电子商务</td>
+                                <td><span style="background: #e3f2fd; color: #2196F3; padding: 2px 8px; border-radius: 4px; font-size: 12px;">经销商</span></td>
+                                <td>32</td>
+                                <td class="amount">¥86,400</td>
+                                <td class="positive">¥86,400</td>
+                                <td>¥0</td>
+                                <td class="trend-down">↓ 3%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: #e8e8e8; color: #666; padding: 4px 10px; border-radius: 12px; font-weight: 600;">5</span></td>
+                                <td>广州制造有限公司</td>
+                                <td><span style="background: #e8f5e9; color: #4CAF50; padding: 2px 8px; border-radius: 4px; font-size: 12px;">企业客户</span></td>
+                                <td>12</td>
+                                <td class="amount">¥68,200</td>
+                                <td class="positive">¥50,000</td>
+                                <td class="negative">¥18,200</td>
+                                <td class="trend-up">↑ 8%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 销售员业绩 -->
+            <div class="data-table-container report-content" id="salesman-report">
+                <div class="table-header">
+                    <div class="table-title">销售员业绩排行</div>
+                    <select class="period-select">
+                        <option>本月</option>
+                        <option>本季度</option>
+                        <option>本年度</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 60px">排名</th>
+                                <th>销售员</th>
+                                <th>所属部门</th>
+                                <th>订单数</th>
+                                <th>销售金额</th>
+                                <th>回款金额</th>
+                                <th>新增客户</th>
+                                <th>环比</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span style="background: linear-gradient(135deg, #FFD700, #FFA500); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600;">1</span></td>
+                                <td>张伟</td>
+                                <td>华东区</td>
+                                <td>68</td>
+                                <td class="amount">¥285,600</td>
+                                <td class="positive">¥260,000</td>
+                                <td>8</td>
+                                <td class="trend-up">↑ 22%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600;">2</span></td>
+                                <td>李娜</td>
+                                <td>华北区</td>
+                                <td>52</td>
+                                <td class="amount">¥198,400</td>
+                                <td class="positive">¥185,000</td>
+                                <td>6</td>
+                                <td class="trend-up">↑ 15%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: linear-gradient(135deg, #CD7F32, #B8860B); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600;">3</span></td>
+                                <td>王磊</td>
+                                <td>华南区</td>
+                                <td>45</td>
+                                <td class="amount">¥168,500</td>
+                                <td class="positive">¥150,000</td>
+                                <td>5</td>
+                                <td class="trend-up">↑ 12%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: #e8e8e8; color: #666; padding: 4px 10px; border-radius: 12px; font-weight: 600;">4</span></td>
+                                <td>刘芳</td>
+                                <td>华东区</td>
+                                <td>38</td>
+                                <td class="amount">¥142,800</td>
+                                <td class="positive">¥130,000</td>
+                                <td>4</td>
+                                <td class="trend-down">↓ 5%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: #e8e8e8; color: #666; padding: 4px 10px; border-radius: 12px; font-weight: 600;">5</span></td>
+                                <td>陈明</td>
+                                <td>华北区</td>
+                                <td>32</td>
+                                <td class="amount">¥125,600</td>
+                                <td class="positive">¥110,000</td>
+                                <td>3</td>
+                                <td class="trend-up">↑ 8%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 品类销售分析 -->
+            <div class="data-table-container report-content" id="category-report">
+                <div class="table-header">
+                    <div class="table-title">品类销售分析</div>
+                    <select class="period-select">
+                        <option>本月</option>
+                        <option>本季度</option>
+                        <option>本年度</option>
+                    </select>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 60px">排名</th>
+                                <th>品类名称</th>
+                                <th>商品数量</th>
+                                <th>销售数量</th>
+                                <th>销售金额</th>
+                                <th>占比</th>
+                                <th>毛利</th>
+                                <th>环比</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span style="background: linear-gradient(135deg, #FFD700, #FFA500); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600;">1</span></td>
+                                <td>电脑整机</td>
+                                <td>128款</td>
+                                <td>86台</td>
+                                <td class="amount">¥688,000</td>
+                                <td>35%</td>
+                                <td class="positive">¥137,600</td>
+                                <td class="trend-up">↑ 18%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600;">2</span></td>
+                                <td>显示器</td>
+                                <td>56款</td>
+                                <td>158台</td>
+                                <td class="amount">¥474,000</td>
+                                <td>24%</td>
+                                <td class="positive">¥94,800</td>
+                                <td class="trend-up">↑ 12%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: linear-gradient(135deg, #CD7F32, #B8860B); color: white; padding: 4px 10px; border-radius: 12px; font-weight: 600;">3</span></td>
+                                <td>外设配件</td>
+                                <td>245款</td>
+                                <td>512个</td>
+                                <td class="amount">¥358,400</td>
+                                <td>18%</td>
+                                <td class="positive">¥107,520</td>
+                                <td class="trend-up">↑ 25%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: #e8e8e8; color: #666; padding: 4px 10px; border-radius: 12px; font-weight: 600;">4</span></td>
+                                <td>办公设备</td>
+                                <td>68款</td>
+                                <td>45台</td>
+                                <td class="amount">¥225,000</td>
+                                <td>11%</td>
+                                <td class="positive">¥45,000</td>
+                                <td class="trend-down">↓ 3%</td>
+                            </tr>
+                            <tr>
+                                <td><span style="background: #e8e8e8; color: #666; padding: 4px 10px; border-radius: 12px; font-weight: 600;">5</span></td>
+                                <td>网络设备</td>
+                                <td>89款</td>
+                                <td>128台</td>
+                                <td class="amount">¥192,000</td>
+                                <td>10%</td>
+                                <td class="positive">¥38,400</td>
+                                <td class="trend-up">↑ 8%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/common.js"></script>
+    <script>
+        // 渲染销售趋势图
+        function renderSalesChart() {
+            const data = [
+                { month: '10月', amount: 420 },
+                { month: '11月', amount: 465 },
+                { month: '12月', amount: 512 },
+                { month: '1月', amount: 485 },
+                { month: '2月', amount: 445 },
+                { month: '3月', amount: 528 }
+            ];
+            
+            const maxVal = Math.max(...data.map(d => d.amount));
+            const container = document.getElementById('salesChart');
+            
+            container.innerHTML = data.map(d => `
+                <div class="bar-group">
+                    <div class="bar" style="height: ${(d.amount / maxVal) * 220}px">
+                        <div class="bar-value">¥${d.amount}万</div>
+                    </div>
+                    <span class="bar-label">${d.month}</span>
+                </div>
+            `).join('');
+        }
+
+        // 报表标签切换
+        document.querySelectorAll('.report-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                const reportType = this.dataset.report;
+                document.querySelectorAll('.report-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(reportType + '-report').classList.add('active');
+            });
+        });
+
+        // 初始化
+        renderSalesChart();
+    </script>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>库存盘点 - 进销存系统</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .table-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .table-toolbar { padding: 16px 20px; border-bottom: 1px solid #e8e8e8; display: flex; justify-content: space-between; align-items: center; }
+        .table-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+        .table-actions { display: flex; gap: 8px; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; table-layout: fixed; }
+        thead { background: #f5f7fa; }
+        th { padding: 14px 20px; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #e8e8e8; white-space: nowrap; }
+        td { padding: 14px 20px; border-bottom: 1px solid #f0f0f0; color: #666; }
+        th:first-child, td:first-child { padding-left: 24px; }
+        th:last-child, td:last-child { padding-right: 24px; }
+        tbody tr:hover { background: #f5f7ff; }
+        .diff-positive { color: #4caf50; font-weight: 600; }
+        .diff-negative { color: #f44336; font-weight: 600; }
+        .diff-zero { color: #999; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-pending { background: #fff3e0; color: #ff9800; }
+        .status-completed { background: #e8f5e9; color: #4caf50; }
+        .pagination { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-top: 1px solid #e8e8e8; }
+        .pagination-info { font-size: 14px; color: #666; }
+        .pagination-controls { display: flex; gap: 8px; align-items: center; }
+        .page-btn { width: 32px; height: 32px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; }
+        .page-btn:hover { border-color: #667eea; color: #667eea; }
+        .page-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar"></aside>
+    
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="breadcrumb"></div>
+            <div class="toolbar">
+                <button class="btn" data-action="refresh">🔄 刷新</button>
+                <button class="btn" data-action="export">📤 导出</button>
+                <button class="btn btn-primary" onclick="openModal('checkModal')">➕ 新建盘点</button>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <div class="table-title">盘点记录列表</div>
+                    <div class="table-actions">
+                        <input type="text" placeholder="🔍 搜索盘点单..." style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; width: 200px;">
+                        <button class="btn">🔍 筛选</button>
+                        <button class="btn">📊 按仓库</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 140px;">盘点单号</th>
+                                <th style="width: 100px;">仓库</th>
+                                <th style="width: 120px;">盘点日期</th>
+                                <th style="width: 80px;">盘点人</th>
+                                <th style="width: 90px;">应盘数量</th>
+                                <th style="width: 90px;">实盘数量</th>
+                                <th style="width: 80px;">差异</th>
+                                <th style="width: 100px;">状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>CHK20260402001</td><td>北京仓</td><td>2026-04-02</td><td>张三</td><td>150</td><td>148</td><td class="diff-negative">-2</td><td><span class="status-badge status-pending">⏳ 待处理</span></td></tr>
+                            <tr><td>CHK20260401002</td><td>上海仓</td><td>2026-04-01</td><td>李四</td><td>200</td><td>200</td><td class="diff-zero">0</td><td><span class="status-badge status-completed">✓ 已完成</span></td></tr>
+                            <tr><td>CHK20260331003</td><td>广州仓</td><td>2026-03-31</td><td>王五</td><td>180</td><td>182</td><td class="diff-positive">+2</td><td><span class="status-badge status-completed">✓ 已完成</span></td></tr>
+                            <tr><td>CHK20260330004</td><td>深圳仓</td><td>2026-03-30</td><td>赵六</td><td>120</td><td>120</td><td class="diff-zero">0</td><td><span class="status-badge status-completed">✓ 已完成</span></td></tr>
+                            <tr><td>CHK20260329005</td><td>北京仓</td><td>2026-03-29</td><td>张三</td><td>90</td><td>87</td><td class="diff-negative">-3</td><td><span class="status-badge status-completed">✓ 已调整</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-info">显示 1-5 条，共 32 条记录</div>
+                    <div class="pagination-controls">
+                        <button class="page-btn">◀</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">▶</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="checkModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">新建盘点单</h3>
+                <button class="modal-close" data-action="close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">盘点日期 *</label>
+                        <input type="date" class="form-input" value="2026-04-02">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">仓库 *</label>
+                        <select class="form-input">
+                            <option value="">请选择仓库</option>
+                            <option value="bj">北京仓</option>
+                            <option value="sh">上海仓</option>
+                            <option value="gz">广州仓</option>
+                            <option value="sz">深圳仓</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label">备注</label>
+                    <textarea class="form-textarea" placeholder="请输入备注信息"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn" data-action="close-modal">取消</button>
+                    <button class="btn btn-primary">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+</body>
+</html>

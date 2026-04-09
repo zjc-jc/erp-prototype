@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>采购订单 - 进销存系统</title>
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <div class="sidebar"></div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="breadcrumb"></div>
+            <div class="toolbar">
+                <button class="btn" data-action="refresh">🔄 刷新</button>
+                <button class="btn" data-action="export">📤 导出</button>
+                <button class="btn" data-action="print">🖨️ 打印</button>
+                <button class="btn btn-primary" data-action="open-modal" data-modal="addModal">➕ 新建订单</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <div class="table-title">采购订单列表</div>
+                    <div class="table-actions">
+                        <div class="search-box">
+                            <input type="text" placeholder="搜索订单...">
+                        </div>
+                        <button class="btn">🔍 筛选</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;"><input type="checkbox"></th>
+                                <th style="width: 140px;">订单编号</th>
+                                <th>供应商</th>
+                                <th>商品名称</th>
+                                <th style="width: 80px;">数量</th>
+                                <th style="width: 100px;">单价</th>
+                                <th style="width: 100px;">总金额</th>
+                                <th style="width: 100px;">下单日期</th>
+                                <th style="width: 100px;">状态</th>
+                                <th style="width: 100px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PO20260402001</td>
+                                <td>上海电子科技有限公司</td>
+                                <td>联想 ThinkPad X1 Carbon</td>
+                                <td>5</td>
+                                <td>¥8,500</td>
+                                <td class="amount">¥42,500</td>
+                                <td>2026-04-02</td>
+                                <td><span class="status-badge status-pending">⏳ 待发货</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                    <button class="btn btn-sm">入库</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PO20260401002</td>
+                                <td>北京商贸集团</td>
+                                <td>戴尔显示器 27 寸</td>
+                                <td>10</td>
+                                <td>¥1,800</td>
+                                <td class="amount">¥18,000</td>
+                                <td>2026-04-01</td>
+                                <td><span class="status-badge status-completed">✓ 已完成</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PO20260331003</td>
+                                <td>广州办公用品有限公司</td>
+                                <td>罗技键盘鼠标套装</td>
+                                <td>20</td>
+                                <td>¥280</td>
+                                <td class="amount">¥5,600</td>
+                                <td>2026-03-31</td>
+                                <td><span class="status-badge status-completed">✓ 已完成</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PO20260330004</td>
+                                <td>深圳数码科技</td>
+                                <td>机械硬盘 4TB</td>
+                                <td>8</td>
+                                <td>¥650</td>
+                                <td class="amount">¥5,200</td>
+                                <td>2026-03-30</td>
+                                <td><span class="status-badge status-pending">⏳ 待发货</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                    <button class="btn btn-sm">入库</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PO20260329005</td>
+                                <td>苏州精密仪器</td>
+                                <td>苹果 MacBook Pro</td>
+                                <td>3</td>
+                                <td>¥14,999</td>
+                                <td class="amount">¥44,997</td>
+                                <td>2026-03-29</td>
+                                <td><span class="status-badge status-draft">📝 草稿</span></td>
+                                <td>
+                                    <button class="btn btn-sm">编辑</button>
+                                    <button class="btn btn-sm btn-danger">删除</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PO20260328006</td>
+                                <td>成都包装材料</td>
+                                <td>包装纸箱 50*40*30</td>
+                                <td>500</td>
+                                <td>¥3.5</td>
+                                <td class="amount">¥1,750</td>
+                                <td>2026-03-28</td>
+                                <td><span class="status-badge status-completed">✓ 已完成</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PO20260327007</td>
+                                <td>杭州智能设备厂</td>
+                                <td>无线网卡 AX200</td>
+                                <td>30</td>
+                                <td>¥85</td>
+                                <td class="amount">¥2,550</td>
+                                <td>2026-03-27</td>
+                                <td><span class="status-badge status-cancelled">✗ 已取消</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PO20260326008</td>
+                                <td>上海电子科技有限公司</td>
+                                <td>服务器内存条 32GB</td>
+                                <td>16</td>
+                                <td>¥899</td>
+                                <td class="amount">¥14,384</td>
+                                <td>2026-03-26</td>
+                                <td><span class="status-badge status-completed">✓ 已完成</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-info">共 8 条记录</div>
+                    <div class="pagination-controls">
+                        <button class="page-btn">‹</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">›</button>
+                        <span style="color: #666; margin-left: 8px;">20 条/页</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新建采购订单弹窗 -->
+    <div id="addModal" class="modal-overlay">
+        <div class="modal" style="max-width: 900px;">
+            <div class="modal-header">
+                <div class="modal-title">新建采购订单</div>
+                <button class="modal-close" data-action="close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">订单编号</label>
+                        <input type="text" class="form-input" value="PO20260402009" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label required">下单日期</label>
+                        <input type="date" class="form-input" value="2026-04-02">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label required">供应商</label>
+                        <select class="form-input">
+                            <option>请选择供应商</option>
+                            <option>上海电子科技有限公司</option>
+                            <option>北京商贸集团</option>
+                            <option>广州办公用品有限公司</option>
+                            <option>深圳数码科技</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">付款方式</label>
+                        <select class="form-input">
+                            <option>月结</option>
+                            <option>货到付款</option>
+                            <option>预付 30%</option>
+                            <option>全额预付</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label required">收货地址</label>
+                    <input type="text" class="form-input" value="上海市浦东新区张江高科技园区 XX 路 XX 号">
+                </div>
+                <div class="form-field">
+                    <label class="form-label">订单商品清单</label>
+                    <table class="items-table" id="orderItemsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%;">商品名称</th>
+                                <th style="width: 15%;">规格型号</th>
+                                <th style="width: 10%;">数量</th>
+                                <th style="width: 12%;">单价</th>
+                                <th style="width: 13%;">小计</th>
+                                <th style="width: 8%;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" value="联想 ThinkPad X1 Carbon"></td>
+                                <td><input type="text" value="i7/16G/512G"></td>
+                                <td><input type="number" value="5" min="1" onchange="calcTotal()"></td>
+                                <td><input type="number" value="8500" step="0.01" onchange="calcTotal()"></td>
+                                <td class="amount">¥42,500</td>
+                                <td><button class="btn btn-sm" onclick="deleteTableRow(this)">🗑️</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="add-row-btn" onclick="addOrderItem()">+ 添加商品</button>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">订单总额</label>
+                        <input type="text" class="form-input" id="orderTotal" value="¥42,500" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">整单折扣率</label>
+                        <div style="display: flex; align-items: center;">
+                            <input type="number" class="form-input" id="discountRate" value="100" min="0" max="100" onchange="calcDiscount()" style="flex: 1;">
+                            <span style="margin-left: 8px;">%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">整单优惠金额</label>
+                        <div style="display: flex; align-items: center;">
+                            <input type="number" class="form-input" id="discountAmount" value="0" min="0" step="0.01" onchange="calcDiscount()" style="flex: 1;">
+                            <span style="margin-left: 8px;">元</span>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">折后总额</label>
+                        <input type="text" class="form-input" id="finalTotal" value="¥42,500" readonly style="font-weight: bold; color: #667eea;">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label">备注说明</label>
+                    <textarea class="form-textarea" placeholder="订单备注信息"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-action="close-modal">取消</button>
+                <button class="btn btn-warning">💾 保存草稿</button>
+                <button class="btn btn-primary">✅ 提交订单</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script>
+        function addOrderItem() {
+            const tbody = document.querySelector('#orderItemsTable tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="商品名称"></td>
+                <td><input type="text" placeholder="规格型号"></td>
+                <td><input type="number" value="1" min="1" onchange="calcTotal()"></td>
+                <td><input type="number" placeholder="0.00" step="0.01" onchange="calcTotal()"></td>
+                <td class="amount">¥0.00</td>
+                <td><button class="btn btn-sm" onclick="deleteTableRow(this); calcTotal();">🗑️</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+        
+        function calcTotal() {
+            const tbody = document.querySelector('#orderItemsTable tbody');
+            const rows = tbody.querySelectorAll('tr');
+            let grandTotal = 0;
+            
+            rows.forEach(row => {
+                const qty = parseFloat(row.querySelector('td:nth-child(3) input')?.value) || 0;
+                const price = parseFloat(row.querySelector('td:nth-child(4) input')?.value) || 0;
+                const subtotal = qty * price;
+                const subtotalCell = row.querySelector('td:nth-child(5)');
+                if (subtotalCell) {
+                    subtotalCell.textContent = '¥' + subtotal.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+                }
+                grandTotal += subtotal;
+            });
+            
+            // 更新订单总额
+            document.getElementById('orderTotal').value = '¥' + grandTotal.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+            
+            // 计算折后总额
+            calcDiscount(grandTotal);
+        }
+        
+        function calcDiscount(orderTotal) {
+            // 如果没有传入订单总额，则从输入框获取
+            if (orderTotal === undefined) {
+                const totalText = document.getElementById('orderTotal').value;
+                orderTotal = parseFloat(totalText.replace(/[¥,]/g, '')) || 0;
+            }
+            
+            // 获取整单折扣率
+            const discountRate = parseFloat(document.getElementById('discountRate').value) || 100;
+            
+            // 获取整单优惠金额
+            const discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
+            
+            // 计算折后总额
+            const finalTotal = orderTotal * (discountRate / 100) - discountAmount;
+            document.getElementById('finalTotal').value = '¥' + finalTotal.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+        }
+    </script>
+</body>
+</html>

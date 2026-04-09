@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>财务报表 - 进销存系统</title>
+    <link rel="stylesheet" href="css/mobile.css">
+    <style>
+        .report-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+        .report-card-header {
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .report-card-body {
+            padding: 14px 16px;
+        }
+        .report-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .report-row:last-child {
+            border-bottom: none;
+        }
+        .report-label {
+            color: #666;
+            font-size: 13px;
+        }
+        .report-value {
+            font-weight: 600;
+            font-size: 13px;
+            color: #333;
+        }
+        .report-value.highlight {
+            color: #667eea;
+            font-size: 15px;
+        }
+        .report-value.positive {
+            color: #4CAF50;
+        }
+        .report-value.negative {
+            color: #F44336;
+        }
+        
+        /* 发票统计卡片 */
+        .invoice-stat-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+        .invoice-stat-header {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .invoice-stat-header.input { border-left: 4px solid #2196F3; }
+        .invoice-stat-header.output { border-left: 4px solid #4CAF50; }
+        .invoice-stat-header.tax { border-left: 4px solid #FF9800; }
+        .invoice-stat-icon { font-size: 20px; }
+        .invoice-stat-title { font-size: 14px; font-weight: 600; color: #333; }
+        .invoice-stat-body { padding: 12px 16px; }
+        .invoice-stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+        }
+        .invoice-stat-label { font-size: 13px; color: #666; }
+        .invoice-stat-value { font-size: 13px; font-weight: 600; color: #333; }
+        .invoice-stat-value.blue { color: #2196F3; }
+        .invoice-stat-value.green { color: #4CAF50; }
+        .invoice-stat-value.orange { color: #FF9800; }
+        
+        /* 发票明细 */
+        .invoice-item {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 14px 16px;
+        }
+        .invoice-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .invoice-no { font-size: 14px; font-weight: 600; color: #667eea; }
+        .invoice-date { font-size: 12px; color: #999; }
+        .invoice-item-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .invoice-info-label { font-size: 12px; color: #999; }
+        .invoice-info-value { font-size: 13px; color: #333; font-weight: 500; }
+        
+        /* 税负分析提示 */
+        .tax-tip {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8f0ff 100%);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            border-left: 3px solid #667eea;
+        }
+        .tax-tip-title { font-size: 13px; font-weight: 600; color: #667eea; margin-bottom: 6px; }
+        .tax-tip-text { font-size: 12px; color: #666; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="header-left">
+            <span class="header-title">财务报表</span>
+        </div>
+        <div class="header-right">
+            <div class="header-icon">📤</div>
+        </div>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- 标签页 -->
+        <div class="tabs">
+            <button class="tab active" data-tab="overview">概览</button>
+            <button class="tab" data-tab="invoice">发票统计</button>
+            <button class="tab" data-tab="tax">税负分析</button>
+        </div>
+
+        <!-- 概览内容 -->
+        <div id="overview-content" class="tab-content">
+            <!-- 统计卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-icon green">💰</div>
+                        <span class="stat-label">本月营收</span>
+                    </div>
+                    <div class="stat-value">¥528K</div>
+                    <div class="stat-trend up">↑ 12.5%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-icon orange">📊</div>
+                        <span class="stat-label">本月成本</span>
+                    </div>
+                    <div class="stat-value">¥386K</div>
+                    <div class="stat-trend up">↑ 8.3%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-icon blue">💵</div>
+                        <span class="stat-label">净利润</span>
+                    </div>
+                    <div class="stat-value">¥142K</div>
+                    <div class="stat-trend up">↑ 18.7%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-icon red">📈</div>
+                        <span class="stat-label">毛利率</span>
+                    </div>
+                    <div class="stat-value">26.9%</div>
+                    <div class="stat-trend up">↑ 2.1%</div>
+                </div>
+            </div>
+
+            <!-- 利润表 -->
+            <div class="report-card">
+                <div class="report-card-header">📈 利润表</div>
+                <div class="report-card-body">
+                    <div class="report-row">
+                        <span class="report-label">营业收入</span>
+                        <span class="report-value">¥528,600.00</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">营业成本</span>
+                        <span class="report-value negative">-¥386,400.00</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">营业毛利</span>
+                        <span class="report-value highlight">¥142,200.00</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">期间费用</span>
+                        <span class="report-value negative">-¥77,600.00</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">营业利润</span>
+                        <span class="report-value positive">¥64,600.00</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">净利润</span>
+                        <span class="report-value highlight">¥49,425.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 发票统计内容 -->
+        <div id="invoice-content" class="tab-content" style="display: none;">
+            <!-- 进项发票统计 -->
+            <div class="invoice-stat-card">
+                <div class="invoice-stat-header input">
+                    <span class="invoice-stat-icon">📄</span>
+                    <span class="invoice-stat-title">进项发票</span>
+                </div>
+                <div class="invoice-stat-body">
+                    <div class="invoice-stat-row">
+                        <span class="invoice-stat-label">本月进项金额</span>
+                        <span class="invoice-stat-value">¥356,800</span>
+                    </div>
+                    <div class="invoice-stat-row">
+                        <span class="invoice-stat-label">进项税额</span>
+                        <span class="invoice-stat-value blue">¥46,384</span>
+                    </div>
+                    <div class="invoice-stat-row">
+                        <span class="invoice-stat-label">待认证发票</span>
+                        <span class="invoice-stat-value orange">3 张</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 销项发票统计 -->
+            <div class="invoice-stat-card">
+                <div class="invoice-stat-header output">
+                    <span class="invoice-stat-icon">🧾</span>
+                    <span class="invoice-stat-title">销项发票</span>
+                </div>
+                <div class="invoice-stat-body">
+                    <div class="invoice-stat-row">
+                        <span class="invoice-stat-label">本月销项金额</span>
+                        <span class="invoice-stat-value">¥489,600</span>
+                    </div>
+                    <div class="invoice-stat-row">
+                        <span class="invoice-stat-label">销项税额</span>
+                        <span class="invoice-stat-value green">¥63,648</span>
+                    </div>
+                    <div class="invoice-stat-row">
+                        <span class="invoice-stat-label">未开票订单</span>
+                        <span class="invoice-stat-value orange">5 单</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 进项发票明细 -->
+            <div style="margin: 20px 0 12px; padding: 0 4px;">
+                <span style="font-size: 14px; font-weight: 600; color: #333;">进项发票明细</span>
+            </div>
+
+            <div class="invoice-item">
+                <div class="invoice-item-header">
+                    <span class="invoice-no">FP2026030001</span>
+                    <span class="invoice-date">2026-03-05</span>
+                </div>
+                <div class="invoice-item-body">
+                    <div>
+                        <div class="invoice-info-label">供应商</div>
+                        <div class="invoice-info-value">上海电子科技</div>
+                    </div>
+                    <div>
+                        <div class="invoice-info-label">税率</div>
+                        <div class="invoice-info-value">13%</div>
+                    </div>
+                    <div>
+                        <div class="invoice-info-label">金额(不含税)</div>
+                        <div class="invoice-info-value">¥86,500.00</div>
+                    </div>
+                    <div>
+                        <div class="invoice-info-label">税额</div>
+                        <div class="invoice-info-value" style="color: #2196F3;">¥11,245.00</div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: #666;">价税合计：<strong style="color: #333;">¥97,745.00</strong></span>
+                    <span class="order-status status-approved">已认证</span>
+                </div>
+            </div>
+
+            <div class="invoice-item">
+                <div class="invoice-item-header">
+                    <span class="invoice-no">FP2026030002</span>
+                    <span class="invoice-date">2026-03-12</span>
+                </div>
+                <div class="invoice-item-body">
+                    <div>
+                        <div class="invoice-info-label">供应商</div>
+                        <div class="invoice-info-value">北京商贸集团</div>
+                    </div>
+                    <div>
+                        <div class="invoice-info-label">税率</div>
+                        <div class="invoice-info-value">13%</div>
+                    </div>
+                    <div>
+                        <div class="invoice-info-label">金额(不含税)</div>
+                        <div class="invoice-info-value">¥125,800.00</div>
+                    </div>
+                    <div>
+                        <div class="invoice-info-label">税额</div>
+                        <div class="invoice-info-value" style="color: #2196F3;">¥16,354.00</div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: #666;">价税合计：<strong style="color: #333;">¥142,154.00</strong></span>
+                    <span class="order-status status-approved">已认证</span>
+                </div>
+            </div>
+
+            <div class="invoice-item">
+                <div class="invoice-item-header">
+                    <span class="invoice-no">FP2026030003</span>
+                    <span class="invoice-date">2026-03-18</span>
+                </div>
+                <div class="invoice-item-body">
+                    <div>
+                        <div class="invoice-info-label">供应商</div>
+                        <div class="invoice-info-value">深圳数码科技</div>
+                    </div>
+                    <div>
+                        <div class="invoice-info-label">税率</div>
+                        <div class="invoice-info-value">13%</div>
+                    </div>
+                    <div>
+                        <div class="invoice-info-label">金额(不含税)</div>
+                        <div class="invoice-info-value">¥58,200.00</div>
+                    </div>
+                    <div>
+                        <div class="invoice-info-label">税额</div>
+                        <div class="invoice-info-value" style="color: #2196F3;">¥7,566.00</div>
+                    </div>
+                </div>
+                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: #666;">价税合计：<strong style="color: #333;">¥65,766.00</strong></span>
+                    <span class="order-status status-warning">待认证</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 税负分析内容 -->
+        <div id="tax-content" class="tab-content" style="display: none;">
+            <!-- 税负概览 -->
+            <div class="invoice-stat-card">
+                <div class="invoice-stat-header tax">
+                    <span class="invoice-stat-icon">🏛️</span>
+                    <span class="invoice-stat-title">税负分析</span>
+                </div>
+                <div class="invoice-stat-body">
+                    <div class="invoice-stat-row">
+                        <span class="invoice-stat-label">应纳增值税</span>
+                        <span class="invoice-stat-value orange">¥17,264</span>
+                    </div>
+                    <div class="invoice-stat-row">
+                        <span class="invoice-stat-label">税负率</span>
+                        <span class="invoice-stat-value">3.53%</span>
+                    </div>
+                    <div class="invoice-stat-row">
+                        <span class="invoice-stat-label">预警状态</span>
+                        <span class="invoice-stat-value green">✓ 正常</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 月度税负 -->
+            <div style="margin: 20px 0 12px; padding: 0 4px;">
+                <span style="font-size: 14px; font-weight: 600; color: #333;">月度税负分析</span>
+            </div>
+
+            <div class="report-card">
+                <div class="report-card-body">
+                    <div class="report-row">
+                        <span class="report-label">2026年1月</span>
+                        <span class="report-value">税负率 3.56%</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">销项税额</span>
+                        <span class="report-value">¥63,050</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">进项税额</span>
+                        <span class="report-value">¥45,760</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">应纳税额</span>
+                        <span class="report-value highlight">¥17,290</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-card">
+                <div class="report-card-body">
+                    <div class="report-row">
+                        <span class="report-label">2026年2月</span>
+                        <span class="report-value">税负率 3.10%</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">销项税额</span>
+                        <span class="report-value">¥61,100</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">进项税额</span>
+                        <span class="report-value">¥46,540</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">应纳税额</span>
+                        <span class="report-value highlight">¥14,560</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-card">
+                <div class="report-card-body">
+                    <div class="report-row">
+                        <span class="report-label">2026年3月</span>
+                        <span class="report-value">税负率 3.75%</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">销项税额</span>
+                        <span class="report-value">¥63,648</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">进项税额</span>
+                        <span class="report-value">¥45,305</span>
+                    </div>
+                    <div class="report-row">
+                        <span class="report-label">应纳税额</span>
+                        <span class="report-value highlight">¥18,343</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 税负提示 -->
+            <div class="tax-tip">
+                <div class="tax-tip-title">📊 税负分析说明</div>
+                <div class="tax-tip-text">
+                    • 税负率计算：应纳增值税 ÷ 销售收入 × 100%<br>
+                    • 行业预警线：约 3.0%-4.0%，低于 2.5% 可能触发预警<br>
+                    • 本季度税负率：3.48%，处于正常范围<br>
+                    • 建议：保持合理进销项比例，避免长期留抵
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav"></nav>
+
+    <script src="js/mobile.js"></script>
+    <script>
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 切换标签样式
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 切换内容
+                const tabName = this.dataset.tab;
+                document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+                document.getElementById(tabName + '-content').style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>

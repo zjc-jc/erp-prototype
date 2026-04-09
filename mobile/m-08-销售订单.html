@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>销售订单 - 进销存系统</title>
+    <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="header-left">
+            <span class="back-btn" style="cursor: pointer;">←</span>
+            <span class="header-title">销售订单</span>
+        </div>
+        <div class="header-right">
+            <div class="header-icon">🔍</div>
+            <div class="header-icon">➕</div>
+        </div>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- 标签页 -->
+        <div class="tabs">
+            <div class="tab active" data-status="all">全部</div>
+            <div class="tab" data-status="pending">待确认</div>
+            <div class="tab" data-status="shipping">待发货</div>
+            <div class="tab" data-status="completed">已完成</div>
+        </div>
+
+        <!-- 搜索栏 -->
+        <div class="search-bar">
+            <span>🔍</span>
+            <input type="text" placeholder="搜索订单号、客户名...">
+        </div>
+
+        <!-- 订单列表 -->
+        <div class="order-card" onclick="openModal('orderDetail')">
+            <div class="order-header">
+                <span class="order-id">SO20260402001</span>
+                <span class="order-status status-warning">待确认</span>
+            </div>
+            <div class="order-body">
+                <div class="order-row">
+                    <span class="order-label">客户名称</span>
+                    <span class="order-value">北京科技有限公司</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">订单商品</span>
+                    <span class="order-value">笔记本电脑 × 5</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">下单时间</span>
+                    <span class="order-value">2026-04-02 14:30</span>
+                </div>
+            </div>
+            <div class="order-footer">
+                <span class="order-amount">¥44,995</span>
+                <div class="order-actions">
+                    <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();">驳回</button>
+                    <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); showToast('订单已确认')">确认</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card">
+            <div class="order-header">
+                <span class="order-id">SO20260402002</span>
+                <span class="order-status status-info">待发货</span>
+            </div>
+            <div class="order-body">
+                <div class="order-row">
+                    <span class="order-label">客户名称</span>
+                    <span class="order-value">上海贸易公司</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">订单商品</span>
+                    <span class="order-value">办公椅 × 10</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">下单时间</span>
+                    <span class="order-value">2026-04-02 11:20</span>
+                </div>
+            </div>
+            <div class="order-footer">
+                <span class="order-amount">¥15,990</span>
+                <div class="order-actions">
+                    <button class="btn btn-sm btn-primary" onclick="showToast('已安排发货')">发货</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card">
+            <div class="order-header">
+                <span class="order-id">SO20260402003</span>
+                <span class="order-status status-success">已完成</span>
+            </div>
+            <div class="order-body">
+                <div class="order-row">
+                    <span class="order-label">客户名称</span>
+                    <span class="order-value">广州电子商贸</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">订单商品</span>
+                    <span class="order-value">机械键盘 × 20</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">完成时间</span>
+                    <span class="order-value">2026-04-02 09:15</span>
+                </div>
+            </div>
+            <div class="order-footer">
+                <span class="order-amount">¥7,980</span>
+                <div class="order-actions">
+                    <button class="btn btn-sm btn-secondary">详情</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card">
+            <div class="order-header">
+                <span class="order-id">SO20260402004</span>
+                <span class="order-status status-info">待发货</span>
+            </div>
+            <div class="order-body">
+                <div class="order-row">
+                    <span class="order-label">客户名称</span>
+                    <span class="order-value">深圳网络科技</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">订单商品</span>
+                    <span class="order-value">无线鼠标 × 50</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">下单时间</span>
+                    <span class="order-value">2026-04-01 16:45</span>
+                </div>
+            </div>
+            <div class="order-footer">
+                <span class="order-amount">¥6,450</span>
+                <div class="order-actions">
+                    <button class="btn btn-sm btn-primary" onclick="showToast('已安排发货')">发货</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-card">
+            <div class="order-header">
+                <span class="order-id">SO20260402005</span>
+                <span class="order-status status-success">已完成</span>
+            </div>
+            <div class="order-body">
+                <div class="order-row">
+                    <span class="order-label">客户名称</span>
+                    <span class="order-value">杭州软件开发</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">订单商品</span>
+                    <span class="order-value">A4打印纸 × 100</span>
+                </div>
+                <div class="order-row">
+                    <span class="order-label">完成时间</span>
+                    <span class="order-value">2026-04-01 10:30</span>
+                </div>
+            </div>
+            <div class="order-footer">
+                <span class="order-amount">¥3,500</span>
+                <div class="order-actions">
+                    <button class="btn btn-sm btn-secondary">详情</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 加载更多 -->
+        <div class="load-more">点击加载更多...</div>
+    </main>
+
+    <!-- 浮动按钮 -->
+    <button class="fab" onclick="openModal('addOrderModal')">+</button>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav"></nav>
+
+    <!-- 订单详情弹窗 -->
+    <div class="modal-overlay" id="orderDetail">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">订单详情</span>
+                <button class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 12px; opacity: 0.9;">订单编号</div>
+                            <div style="font-size: 16px; font-weight: 600;">SO20260402001</div>
+                        </div>
+                        <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px;">待确认</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 13px; color: #666; margin-bottom: 8px;">客户信息</div>
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 12px;">
+                        <div style="font-weight: 500; margin-bottom: 4px;">北京科技有限公司</div>
+                        <div style="font-size: 13px; color: #666;">联系人: 张经理</div>
+                        <div style="font-size: 13px; color: #666;">电话: 138-0000-0001</div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 13px; color: #666; margin-bottom: 8px;">商品明细</div>
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e8e8e8;">
+                            <span>笔记本电脑 Pro 15</span>
+                            <span>×5</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e8e8e8;">
+                            <span>单价</span>
+                            <span>¥8,999</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; font-weight: 600;">
+                            <span>订单金额</span>
+                            <span style="color: #f44336;">¥44,995</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 13px; color: #666; margin-bottom: 8px;">订单信息</div>
+                    <div style="font-size: 13px; line-height: 2;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #999;">下单时间</span>
+                            <span>2026-04-02 14:30</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #999;">付款方式</span>
+                            <span>银行转账</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #999;">配送方式</span>
+                            <span>快递配送</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: #999;">收货地址</span>
+                            <span>北京市朝阳区xxx大厦</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="font-size: 13px; color: #666; margin-bottom: 8px;">备注</div>
+                    <div style="font-size: 13px; color: #666; background: #f8f9fa; border-radius: 8px; padding: 12px;">
+                        请在发货前确认库存充足，联系客户确认收货时间。
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('orderDetail')">关闭</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="closeModal('orderDetail'); showToast('订单已确认')">确认订单</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增订单弹窗 -->
+    <div class="modal-overlay" id="addOrderModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">新增销售订单</span>
+                <button class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label required">客户</label>
+                    <select class="form-select">
+                        <option>请选择客户</option>
+                        <option>北京科技有限公司</option>
+                        <option>上海贸易公司</option>
+                        <option>广州电子商贸</option>
+                        <option>深圳网络科技</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">订单商品</label>
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 12px; margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span>笔记本电脑 Pro 15</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <button style="width: 24px; height: 24px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">-</button>
+                                <span style="min-width: 30px; text-align: center;">1</span>
+                                <button style="width: 24px; height: 24px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">+</button>
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #999;">单价: ¥8,999</div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" style="width: 100%;">+ 添加商品</button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">付款方式</label>
+                    <select class="form-select">
+                        <option>银行转账</option>
+                        <option>现金支付</option>
+                        <option>微信支付</option>
+                        <option>支付宝</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">配送方式</label>
+                    <select class="form-select">
+                        <option>快递配送</option>
+                        <option>自提</option>
+                        <option>物流配送</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">备注</label>
+                    <textarea class="form-textarea" placeholder="请输入备注信息"></textarea>
+                </div>
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 12px; text-align: right;">
+                    <span style="color: #666;">订单金额: </span>
+                    <span style="font-size: 20px; font-weight: 700; color: #f44336;">¥8,999</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('addOrderModal')">取消</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="closeModal('addOrderModal'); showToast('订单创建成功')">创建订单</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/mobile.js"></script>
+    <script>
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

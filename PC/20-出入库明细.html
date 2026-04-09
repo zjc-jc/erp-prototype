@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出入库明细 - 进销存系统</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .table-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .table-toolbar { padding: 16px 20px; border-bottom: 1px solid #e8e8e8; display: flex; justify-content: space-between; align-items: center; }
+        .table-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+        .table-actions { display: flex; gap: 8px; align-items: center; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead { background: #f5f7fa; }
+        th { padding: 12px 16px; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #e8e8e8; white-space: nowrap; }
+        td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; }
+        tbody tr:hover { background: #f5f7ff; }
+        .pagination { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-top: 1px solid #e8e8e8; }
+        .pagination-info { font-size: 14px; color: #666; }
+        .pagination-controls { display: flex; gap: 8px; align-items: center; }
+        .page-btn { width: 32px; height: 32px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; }
+        .page-btn:hover { border-color: #667eea; color: #667eea; }
+        .page-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; }
+
+        /* 数据来源标签颜色 */
+        .source-badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+        /* 入库类型 - 蓝绿色系 */
+        .source-purchase-in { background: #e3f2fd; color: #1976d2; }
+        .source-other-in { background: #e0f7fa; color: #00838f; }
+        .source-transfer-in { background: #f3e5f5; color: #7b1fa2; }
+        .source-surplus-in { background: #e8f5e9; color: #2e7d32; }
+        .source-return-in { background: #fff3e0; color: #ef6c00; }
+        /* 出库类型 - 红橙色系 */
+        .source-sales-out { background: #ffebee; color: #c62828; }
+        .source-other-out { background: #fce4ec; color: #ad1457; }
+        .source-transfer-out { background: #fff8e1; color: #f57f17; }
+        .source-loss-out { background: #fbe9e7; color: #d84315; }
+        .source-scrap-out { background: #efebe9; color: #5d4037; }
+
+        /* 入库/出库类型标记 */
+        .type-in { color: #1976d2; font-weight: 600; }
+        .type-out { color: #c62828; font-weight: 600; }
+
+        /* 筛选下拉框 */
+        .filter-select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; min-width: 120px; }
+        .filter-select:focus { outline: none; border-color: #667eea; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar"></aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="breadcrumb"></div>
+            <div class="toolbar">
+                <button class="btn" data-action="refresh">🔄 刷新</button>
+                <button class="btn" data-action="export">📤 导出</button>
+                <button class="btn" data-action="print">🖨️ 打印</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <div class="table-title">出入库明细记录</div>
+                    <div class="table-actions">
+                        <select class="filter-select" id="filterType">
+                            <option value="">全部类型</option>
+                            <optgroup label="入库类型">
+                                <option value="in">入库</option>
+                                <option value="purchase-in">采购入库</option>
+                                <option value="other-in">其他入库</option>
+                                <option value="transfer-in">调拨入库</option>
+                                <option value="surplus-in">盘盈入库</option>
+                                <option value="return-in">退货入库</option>
+                            </optgroup>
+                            <optgroup label="出库类型">
+                                <option value="out">出库</option>
+                                <option value="sales-out">销售出库</option>
+                                <option value="other-out">其他出库</option>
+                                <option value="transfer-out">调拨出库</option>
+                                <option value="loss-out">盘亏出库</option>
+                                <option value="scrap-out">报废出库</option>
+                            </optgroup>
+                        </select>
+                        <select class="filter-select" id="filterWarehouse">
+                            <option value="">全部仓库</option>
+                            <option value="bj">北京仓</option>
+                            <option value="sh">上海仓</option>
+                            <option value="gz">广州仓</option>
+                            <option value="sz">深圳仓</option>
+                        </select>
+                        <input type="date" class="filter-select" style="width: 130px;" id="filterDateStart" title="开始日期">
+                        <span style="color: #999;">至</span>
+                        <input type="date" class="filter-select" style="width: 130px;" id="filterDateEnd" title="结束日期">
+                        <input type="text" placeholder="🔍 搜索商品..." style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; width: 160px;">
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 100px;">日期</th>
+                                <th style="width: 70px;">类型</th>
+                                <th>商品名称</th>
+                                <th>规格型号</th>
+                                <th style="width: 60px;">单位</th>
+                                <th style="width: 80px;">数量</th>
+                                <th>仓库</th>
+                                <th style="width: 120px;">数据来源</th>
+                                <th>单据编号</th>
+                                <th>操作员</th>
+                                <th>备注</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2026-04-02</td>
+                                <td><span class="type-in">入库</span></td>
+                                <td>联想 ThinkPad X1 Carbon</td>
+                                <td>i7/16G/512G</td>
+                                <td>台</td>
+                                <td style="color: #1976d2; font-weight: 600;">+10</td>
+                                <td>北京仓</td>
+                                <td><span class="source-badge source-purchase-in">采购入库</span></td>
+                                <td>PO20260402001</td>
+                                <td>张三</td>
+                                <td>采购订单入库</td>
+                            </tr>
+                            <tr>
+                                <td>2026-04-02</td>
+                                <td><span class="type-out">出库</span></td>
+                                <td>联想 ThinkPad X1 Carbon</td>
+                                <td>i7/16G/512G</td>
+                                <td>台</td>
+                                <td style="color: #c62828; font-weight: 600;">-3</td>
+                                <td>北京仓</td>
+                                <td><span class="source-badge source-sales-out">销售出库</span></td>
+                                <td>SO20260402001</td>
+                                <td>张三</td>
+                                <td>销售订单出库</td>
+                            </tr>
+                            <tr>
+                                <td>2026-04-02</td>
+                                <td><span class="type-in">入库</span></td>
+                                <td>戴尔显示器 27寸</td>
+                                <td>P2722H</td>
+                                <td>台</td>
+                                <td style="color: #1976d2; font-weight: 600;">+5</td>
+                                <td>上海仓</td>
+                                <td><span class="source-badge source-transfer-in">调拨入库</span></td>
+                                <td>IN20260402001</td>
+                                <td>李四</td>
+                                <td>从北京仓调拨</td>
+                            </tr>
+                            <tr>
+                                <td>2026-04-01</td>
+                                <td><span class="type-out">出库</span></td>
+                                <td>戴尔显示器 27寸</td>
+                                <td>P2722H</td>
+                                <td>台</td>
+                                <td style="color: #c62828; font-weight: 600;">-5</td>
+                                <td>北京仓</td>
+                                <td><span class="source-badge source-transfer-out">调拨出库</span></td>
+                                <td>OUT20260401001</td>
+                                <td>李四</td>
+                                <td>调拨至上海仓</td>
+                            </tr>
+                            <tr>
+                                <td>2026-04-01</td>
+                                <td><span class="type-out">出库</span></td>
+                                <td>罗技键盘鼠标套装</td>
+                                <td>MK270</td>
+                                <td>套</td>
+                                <td style="color: #c62828; font-weight: 600;">-8</td>
+                                <td>广州仓</td>
+                                <td><span class="source-badge source-sales-out">销售出库</span></td>
+                                <td>SO20260401002</td>
+                                <td>王五</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>2026-03-31</td>
+                                <td><span class="type-in">入库</span></td>
+                                <td>机械硬盘 4TB</td>
+                                <td>ST4000DM000</td>
+                                <td>块</td>
+                                <td style="color: #1976d2; font-weight: 600;">+3</td>
+                                <td>北京仓</td>
+                                <td><span class="source-badge source-surplus-in">盘盈入库</span></td>
+                                <td>IN20260331001</td>
+                                <td>张三</td>
+                                <td>盘点盘盈</td>
+                            </tr>
+                            <tr>
+                                <td>2026-03-31</td>
+                                <td><span class="type-out">出库</span></td>
+                                <td>HP LaserJet 打印机</td>
+                                <td>Pro M403dn</td>
+                                <td>台</td>
+                                <td style="color: #c62828; font-weight: 600;">-2</td>
+                                <td>深圳仓</td>
+                                <td><span class="source-badge source-scrap-out">报废出库</span></td>
+                                <td>OUT20260331001</td>
+                                <td>赵六</td>
+                                <td>设备老化报废</td>
+                            </tr>
+                            <tr>
+                                <td>2026-03-30</td>
+                                <td><span class="type-in">入库</span></td>
+                                <td>罗技键盘鼠标套装</td>
+                                <td>MK270</td>
+                                <td>套</td>
+                                <td style="color: #1976d2; font-weight: 600;">+20</td>
+                                <td>广州仓</td>
+                                <td><span class="source-badge source-return-in">退货入库</span></td>
+                                <td>IN20260330001</td>
+                                <td>王五</td>
+                                <td>客户退货</td>
+                            </tr>
+                            <tr>
+                                <td>2026-03-30</td>
+                                <td><span class="type-out">出库</span></td>
+                                <td>机械硬盘 4TB</td>
+                                <td>ST4000DM000</td>
+                                <td>块</td>
+                                <td style="color: #c62828; font-weight: 600;">-1</td>
+                                <td>北京仓</td>
+                                <td><span class="source-badge source-loss-out">盘亏出库</span></td>
+                                <td>OUT20260330001</td>
+                                <td>张三</td>
+                                <td>盘点盘亏</td>
+                            </tr>
+                            <tr>
+                                <td>2026-03-29</td>
+                                <td><span class="type-in">入库</span></td>
+                                <td>HP LaserJet 打印机</td>
+                                <td>Pro M403dn</td>
+                                <td>台</td>
+                                <td style="color: #1976d2; font-weight: 600;">+8</td>
+                                <td>深圳仓</td>
+                                <td><span class="source-badge source-purchase-in">采购入库</span></td>
+                                <td>PO20260329001</td>
+                                <td>赵六</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>2026-03-28</td>
+                                <td><span class="type-in">入库</span></td>
+                                <td>戴尔显示器 27寸</td>
+                                <td>P2722H</td>
+                                <td>台</td>
+                                <td style="color: #1976d2; font-weight: 600;">+15</td>
+                                <td>北京仓</td>
+                                <td><span class="source-badge source-other-in">其他入库</span></td>
+                                <td>IN20260328001</td>
+                                <td>李四</td>
+                                <td>赠品入库</td>
+                            </tr>
+                            <tr>
+                                <td>2026-03-27</td>
+                                <td><span class="type-out">出库</span></td>
+                                <td>联想 ThinkPad X1 Carbon</td>
+                                <td>i7/16G/512G</td>
+                                <td>台</td>
+                                <td style="color: #c62828; font-weight: 600;">-2</td>
+                                <td>北京仓</td>
+                                <td><span class="source-badge source-other-out">其他出库</span></td>
+                                <td>OUT20260327001</td>
+                                <td>张三</td>
+                                <td>样品出库</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-info">显示 1-12 条，共 156 条记录</div>
+                    <div class="pagination-controls">
+                        <button class="page-btn">◀</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">4</button>
+                        <button class="page-btn">...</button>
+                        <button class="page-btn">13</button>
+                        <button class="page-btn">▶</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/common.js"></script>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>库存盘点 - 进销存系统</title>
+    <link rel="stylesheet" href="css/mobile.css">
+    <style>
+        .check-card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+        .check-header {
+            padding: 14px 16px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .check-body {
+            padding: 14px 16px;
+        }
+        .check-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .check-row:last-child {
+            margin-bottom: 0;
+        }
+        .check-label {
+            color: #999;
+        }
+        .check-value {
+            font-weight: 500;
+            color: #333;
+        }
+        .check-footer {
+            padding: 12px 16px;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            gap: 8px;
+        }
+        .diff-tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .diff-tag.positive {
+            background: #e8f5e9;
+            color: #4caf50;
+        }
+        .diff-tag.negative {
+            background: #ffebee;
+            color: #f44336;
+        }
+        .diff-tag.zero {
+            background: #f5f5f5;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="header-left">
+            <span class="back-btn" style="cursor: pointer;">←</span>
+            <span class="header-title">库存盘点</span>
+        </div>
+        <div class="header-right">
+            <div class="header-icon">📊</div>
+            <div class="header-icon">➕</div>
+        </div>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">盘点任务</div>
+                <div class="stat-value" style="font-size: 24px;">12</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">已完成</div>
+                <div class="stat-value" style="font-size: 24px; color: #4caf50;">8</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">盘盈</div>
+                <div class="stat-value" style="font-size: 24px; color: #4caf50;">3</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">盘亏</div>
+                <div class="stat-value" style="font-size: 24px; color: #f44336;">5</div>
+            </div>
+        </div>
+
+        <!-- 标签页 -->
+        <div class="tabs">
+            <div class="tab active">全部</div>
+            <div class="tab">待盘点</div>
+            <div class="tab">已完成</div>
+        </div>
+
+        <!-- 盘点记录 -->
+        <div class="check-card">
+            <div class="check-header">
+                <div>
+                    <div style="font-weight: 600; color: #333;">电子产品仓库</div>
+                    <div style="font-size: 12px; color: #999; margin-top: 2px;">盘点单号: IC20260402001</div>
+                </div>
+                <span class="todo-status status-success">已完成</span>
+            </div>
+            <div class="check-body">
+                <div class="check-row">
+                    <span class="check-label">盘点商品</span>
+                    <span class="check-value">56 种</span>
+                </div>
+                <div class="check-row">
+                    <span class="check-label">盘盈数量</span>
+                    <span class="check-value" style="color: #4caf50;">+12 件</span>
+                </div>
+                <div class="check-row">
+                    <span class="check-label">盘亏数量</span>
+                    <span class="check-value" style="color: #f44336;">-8 件</span>
+                </div>
+                <div class="check-row">
+                    <span class="check-label">盘点时间</span>
+                    <span class="check-value">2026-04-02 16:30</span>
+                </div>
+            </div>
+            <div class="check-footer">
+                <button class="btn btn-secondary btn-sm" style="flex: 1;">查看详情</button>
+            </div>
+        </div>
+
+        <div class="check-card">
+            <div class="check-header">
+                <div>
+                    <div style="font-weight: 600; color: #333;">办公用品仓库</div>
+                    <div style="font-size: 12px; color: #999; margin-top: 2px;">盘点单号: IC20260402002</div>
+                </div>
+                <span class="todo-status status-warning">进行中</span>
+            </div>
+            <div class="check-body">
+                <div class="check-row">
+                    <span class="check-label">盘点商品</span>
+                    <span class="check-value">32 种</span>
+                </div>
+                <div class="check-row">
+                    <span class="check-label">已盘点</span>
+                    <span class="check-value">18 / 32 种</span>
+                </div>
+                <div class="check-row">
+                    <span class="check-label">负责人</span>
+                    <span class="check-value">张小明</span>
+                </div>
+                <div class="check-row">
+                    <span class="check-label">开始时间</span>
+                    <span class="check-value">2026-04-02 09:00</span>
+                </div>
+            </div>
+            <div class="check-footer">
+                <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="showToast('继续盘点')">继续盘点</button>
+            </div>
+        </div>
+
+        <div class="check-card">
+            <div class="check-header">
+                <div>
+                    <div style="font-weight: 600; color: #333;">办公家具仓库</div>
+                    <div style="font-size: 12px; color: #999; margin-top: 2px;">盘点单号: IC20260401003</div>
+                </div>
+                <span class="todo-status status-success">已完成</span>
+            </div>
+            <div class="check-body">
+                <div class="check-row">
+                    <span class="check-label">盘点商品</span>
+                    <span class="check-value">18 种</span>
+                </div>
+                <div class="check-row">
+                    <span class="check-label">盘盈数量</span>
+                    <span class="check-value" style="color: #4caf50;">+3 件</span>
+                </div>
+                <div class="check-row">
+                    <span class="check-label">盘亏数量</span>
+                    <span class="check-value" style="color: #f44336;">-2 件</span>
+                </div>
+                <div class="check-row">
+                    <span class="check-label">盘点时间</span>
+                    <span class="check-value">2026-04-01 15:00</span>
+                </div>
+            </div>
+            <div class="check-footer">
+                <button class="btn btn-secondary btn-sm" style="flex: 1;">查看详情</button>
+            </div>
+        </div>
+
+        <div class="check-card">
+            <div class="check-header">
+                <div>
+                    <div style="font-weight: 600; color: #333;">原材料仓库</div>
+                    <div style="font-size: 12px; color: #999; margin-top: 2px;">盘点单号: IC20260401004</div>
+                </div>
+                <span class="todo-status status-info">待盘点</span>
+            </div>
+            <div class="check-body">
+                <div class="check-row">
+                    <span class="check-label">盘点商品</span>
+                    <span class="check-value">45 种</span>
+                </div>
+                <div class="check-row">
+                    <span class="check-label">计划时间</span>
+                    <span class="check-value">2026-04-03 09:00</span>
+                </div>
+                <div class="check-row">
+                    <span class="check-label">负责人</span>
+                    <span class="check-value">李小红</span>
+                </div>
+            </div>
+            <div class="check-footer">
+                <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="showToast('开始盘点')">开始盘点</button>
+            </div>
+        </div>
+
+        <!-- 加载更多 -->
+        <div class="load-more">点击加载更多...</div>
+    </main>
+
+    <!-- 浮动按钮 -->
+    <button class="fab" onclick="openModal('addCheckModal')">+</button>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav"></nav>
+
+    <!-- 新增盘点弹窗 -->
+    <div class="modal-overlay" id="addCheckModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">新建盘点任务</span>
+                <button class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label required">盘点仓库</label>
+                    <select class="form-select">
+                        <option>请选择仓库</option>
+                        <option>电子产品仓库</option>
+                        <option>办公用品仓库</option>
+                        <option>办公家具仓库</option>
+                        <option>原材料仓库</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">盘点范围</label>
+                    <select class="form-select">
+                        <option>全部商品</option>
+                        <option>指定分类</option>
+                        <option>指定商品</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">计划时间</label>
+                    <input type="datetime-local" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">负责人</label>
+                    <select class="form-select">
+                        <option>请选择负责人</option>
+                        <option>张小明</option>
+                        <option>李小红</option>
+                        <option>王小刚</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">备注</label>
+                    <textarea class="form-textarea" placeholder="请输入备注信息"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('addCheckModal')">取消</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="closeModal('addCheckModal'); showToast('盘点任务已创建')">创建任务</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/mobile.js"></script>
+    <script>
+        // 标签页切换
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

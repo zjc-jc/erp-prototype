@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>销售退货 - 进销存系统</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .table-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .table-toolbar { padding: 16px 20px; border-bottom: 1px solid #e8e8e8; display: flex; justify-content: space-between; align-items: center; }
+        .table-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+        .table-actions { display: flex; gap: 8px; align-items: center; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; table-layout: fixed; }
+        thead { background: #f5f7fa; }
+        th { padding: 14px 18px; text-align: left; font-weight: 600; color: #333; border-bottom: 2px solid #e8e8e8; white-space: nowrap; }
+        td { padding: 14px 18px; border-bottom: 1px solid #f0f0f0; color: #666; }
+        th:first-child, td:first-child { padding-left: 20px; }
+        th:last-child, td:last-child { padding-right: 20px; }
+        tbody tr:hover { background: #f5f7ff; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-pending { background: #fff3e0; color: #ff9800; }
+        .status-processing { background: #e3f2fd; color: #1976d2; }
+        .status-completed { background: #e8f5e9; color: #4caf50; }
+        .status-rejected { background: #ffebee; color: #f44336; }
+        .pagination { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-top: 1px solid #e8e8e8; }
+        .pagination-info { font-size: 14px; color: #666; }
+        .pagination-controls { display: flex; gap: 8px; align-items: center; }
+        .page-btn { width: 32px; height: 32px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; }
+        .page-btn:hover { border-color: #667eea; color: #667eea; }
+        .page-btn.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; }
+        .filter-select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; }
+        .amount { font-weight: 600; color: #f44336; }
+        .modal { width: 800px; max-width: 95%; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar"></aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="breadcrumb"></div>
+            <div class="toolbar">
+                <button class="btn" data-action="refresh">🔄 刷新</button>
+                <button class="btn" data-action="export">📤 导出</button>
+                <button class="btn btn-primary" onclick="openModal('returnModal')">➕ 新建退货</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <div class="table-title">销售退货列表</div>
+                    <div class="table-actions">
+                        <select class="filter-select"><option value="">全部状态</option><option value="pending">待审批</option><option value="processing">处理中</option><option value="completed">已完成</option><option value="rejected">已拒绝</option></select>
+                        <input type="text" placeholder="🔍 搜索退货单..." style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; width: 180px;">
+                        <button class="btn btn-primary">🔍 查询</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 130px;">退货单号</th>
+                                <th style="width: 130px;">关联订单</th>
+                                <th style="width: 150px;">客户名称</th>
+                                <th style="width: 90px;">退货数量</th>
+                                <th style="width: 100px;">退货金额</th>
+                                <th>退货原因</th>
+                                <th style="width: 110px;">申请日期</th>
+                                <th style="width: 90px;">状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>SR20260402001</td><td>SO20260402001</td><td>上海电子科技有限公司</td><td>2 台</td><td class="amount">¥19,000</td><td>质量问题 - 屏幕闪烁</td><td>2026-04-02</td><td><span class="status-badge status-pending">⏳ 待审批</span></td></tr>
+                            <tr><td>SR20260401001</td><td>SO20260401001</td><td>北京商贸集团</td><td>3 台</td><td class="amount">¥6,000</td><td>型号错误 - 拍错型号</td><td>2026-04-01</td><td><span class="status-badge status-processing">🔄 处理中</span></td></tr>
+                            <tr><td>SR20260330001</td><td>SO20260331001</td><td>广州办公用品有限公司</td><td>5 套</td><td class="amount">¥1,600</td><td>包装破损</td><td>2026-03-30</td><td><span class="status-badge status-completed">✓ 已完成</span></td></tr>
+                            <tr><td>SR20260328001</td><td>SO20260330001</td><td>深圳数码科技</td><td>1 块</td><td class="amount">¥750</td><td>功能故障</td><td>2026-03-28</td><td><span class="status-badge status-rejected">✕ 已拒绝</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-info">显示 1-4 条，共 18 条记录</div>
+                    <div class="pagination-controls"><button class="page-btn">◀</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">▶</button></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="returnModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">新建销售退货</h3>
+                <button class="modal-close" data-action="close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-field"><label class="form-label">关联销售订单 *</label><select class="form-input"><option value="">请选择订单</option><option>SO20260402001 - 上海电子科技</option><option>SO20260401001 - 北京商贸集团</option></select></div>
+                    <div class="form-field"><label class="form-label">客户名称</label><input type="text" class="form-input" placeholder="自动带入" disabled></div>
+                    <div class="form-field"><label class="form-label">退货日期 *</label><input type="date" class="form-input" value="2026-04-02"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field"><label class="form-label">退货原因 *</label><select class="form-input"><option value="">请选择退货原因</option><option>质量问题</option><option>型号错误</option><option>数量不符</option><option>包装破损</option><option>其他原因</option></select></div>
+                    <div class="form-field"><label class="form-label">退款方式</label><select class="form-input"><option>原路退回</option><option>银行转账</option><option>现金</option><option>抵扣货款</option></select></div>
+                </div>
+                <div class="form-field" style="margin-top: 16px;"><label class="form-label">备注说明</label><textarea class="form-textarea" placeholder="请详细描述退货原因和情况..."></textarea></div>
+                <div class="form-actions"><button class="btn" data-action="close-modal">取消</button><button class="btn btn-primary">提交申请</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+</body>
+</html>

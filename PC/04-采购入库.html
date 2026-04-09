@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>采购入库 - 进销存系统</title>
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <div class="sidebar"></div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="breadcrumb"></div>
+            <div class="toolbar">
+                <button class="btn" data-action="refresh">🔄 刷新</button>
+                <button class="btn" data-action="export">📤 导出</button>
+                <button class="btn" data-action="print">🖨️ 打印</button>
+                <button class="btn btn-primary" data-action="open-modal" data-modal="addModal">➕ 新建入库单</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <div class="table-title">采购入库列表</div>
+                    <div class="table-actions">
+                        <div class="search-box">
+                            <input type="text" placeholder="搜索入库单...">
+                        </div>
+                        <button class="btn">🔍 筛选</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;"><input type="checkbox"></th>
+                                <th style="width: 140px;">入库单号</th>
+                                <th>采购订单号</th>
+                                <th>供应商</th>
+                                <th>商品数量</th>
+                                <th style="width: 100px;">总金额</th>
+                                <th style="width: 100px;">入库日期</th>
+                                <th style="width: 100px;">状态</th>
+                                <th style="width: 100px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>IN20260402001</td>
+                                <td>PO20260402001</td>
+                                <td>上海电子科技有限公司</td>
+                                <td>5 件</td>
+                                <td class="amount">¥42,500</td>
+                                <td>2026-04-02</td>
+                                <td><span class="status-badge status-pending">⏳ 待验收</span></td>
+                                <td>
+                                    <button class="btn btn-sm">验收</button>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>IN20260401002</td>
+                                <td>PO20260401002</td>
+                                <td>北京商贸集团</td>
+                                <td>10 件</td>
+                                <td class="amount">¥18,000</td>
+                                <td>2026-04-01</td>
+                                <td><span class="status-badge status-completed">✓ 已入库</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>IN20260331003</td>
+                                <td>PO20260331003</td>
+                                <td>广州办公用品有限公司</td>
+                                <td>20 件</td>
+                                <td class="amount">¥5,600</td>
+                                <td>2026-03-31</td>
+                                <td><span class="status-badge status-completed">✓ 已入库</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>IN20260330004</td>
+                                <td>PO20260330004</td>
+                                <td>深圳数码科技</td>
+                                <td>8 件</td>
+                                <td class="amount">¥5,200</td>
+                                <td>2026-03-30</td>
+                                <td><span class="status-badge status-pending">⏳ 待验收</span></td>
+                                <td>
+                                    <button class="btn btn-sm">验收</button>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-info">共 4 条记录</div>
+                    <div class="pagination-controls">
+                        <button class="page-btn">‹</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">›</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新建入库单弹窗 -->
+    <div id="addModal" class="modal-overlay">
+        <div class="modal" style="max-width: 950px;">
+            <div class="modal-header">
+                <div class="modal-title">新建采购入库单</div>
+                <button class="modal-close" data-action="close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label required">入库单号</label>
+                        <input type="text" class="form-input" value="IN20260402005" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label required">入库日期</label>
+                        <input type="date" class="form-input" value="2026-04-02">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label required">采购订单号</label>
+                        <select class="form-input" id="purchaseOrderSelect" onchange="loadOrderItems()">
+                            <option value="">请选择采购订单</option>
+                            <option value="PO20260402001">PO20260402001 - 上海电子科技有限公司</option>
+                            <option value="PO20260330004">PO20260330004 - 深圳数码科技</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label required">供应商</label>
+                        <input type="text" class="form-input" id="supplierName" readonly placeholder="选择采购订单后自动填充">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">仓库</label>
+                        <select class="form-input">
+                            <option>主仓库</option>
+                            <option>分仓库A</option>
+                            <option>分仓库B</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">经手人</label>
+                        <input type="text" class="form-input" placeholder="经手人姓名">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label required">入库明细</label>
+                    <table class="items-table" id="inboundItemsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 30%;">商品名称</th>
+                                <th style="width: 15%;">规格型号</th>
+                                <th style="width: 12%;">订单数量</th>
+                                <th style="width: 12%;">已入库数量</th>
+                                <th style="width: 12%;">本次入库数量</th>
+                                <th style="width: 10%;">单价</th>
+                                <th style="width: 9%;">小计</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" value="联想 ThinkPad X1 Carbon" readonly></td>
+                                <td><input type="text" value="i7/16G/512G" readonly></td>
+                                <td style="text-align: center;">5</td>
+                                <td style="text-align: center;">0</td>
+                                <td><input type="number" value="5" min="0" max="5" onchange="calcInboundTotal()"></td>
+                                <td class="amount">¥8,500</td>
+                                <td class="amount">¥42,500</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">入库数量合计</label>
+                        <input type="text" class="form-input" id="inboundQtyTotal" value="5 件" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">入库金额合计</label>
+                        <input type="text" class="form-input" id="inboundAmountTotal" value="¥42,500" readonly style="font-weight: bold; color: #667eea;">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label">备注</label>
+                    <textarea class="form-textarea" placeholder="入库备注信息"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-action="close-modal">取消</button>
+                <button class="btn btn-primary">确认入库</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script>
+        // 采购订单数据（模拟）
+        const orderData = {
+            'PO20260402001': {
+                supplier: '上海电子科技有限公司',
+                items: [
+                    { name: '联想 ThinkPad X1 Carbon', spec: 'i7/16G/512G', orderQty: 5, inboundQty: 0, price: 8500 }
+                ]
+            },
+            'PO20260330004': {
+                supplier: '深圳数码科技',
+                items: [
+                    { name: '机械硬盘 4TB', spec: 'SATA 6Gb/s', orderQty: 8, inboundQty: 0, price: 650 }
+                ]
+            }
+        };
+        
+        // 加载订单商品明细
+        function loadOrderItems() {
+            const orderNo = document.getElementById('purchaseOrderSelect').value;
+            const tbody = document.querySelector('#inboundItemsTable tbody');
+            
+            if (!orderNo || !orderData[orderNo]) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">请先选择采购订单</td></tr>';
+                document.getElementById('supplierName').value = '';
+                document.getElementById('inboundQtyTotal').value = '';
+                document.getElementById('inboundAmountTotal').value = '';
+                return;
+            }
+            
+            const order = orderData[orderNo];
+            document.getElementById('supplierName').value = order.supplier;
+            
+            let html = '';
+            order.items.forEach((item, index) => {
+                const subtotal = item.price * item.orderQty;
+                html += `
+                    <tr>
+                        <td><input type="text" value="${item.name}" readonly></td>
+                        <td><input type="text" value="${item.spec}" readonly></td>
+                        <td style="text-align: center;">${item.orderQty}</td>
+                        <td style="text-align: center;">${item.inboundQty}</td>
+                        <td><input type="number" value="${item.orderQty - item.inboundQty}" min="0" max="${item.orderQty - item.inboundQty}" onchange="calcInboundTotal()"></td>
+                        <td class="amount">¥${item.price.toLocaleString()}</td>
+                        <td class="amount">¥${subtotal.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+            calcInboundTotal();
+        }
+        
+        // 计算入库总额
+        function calcInboundTotal() {
+            const tbody = document.querySelector('#inboundItemsTable tbody');
+            const rows = tbody.querySelectorAll('tr');
+            let totalQty = 0;
+            let totalAmount = 0;
+            
+            rows.forEach(row => {
+                const qtyInput = row.querySelector('td:nth-child(5) input');
+                const priceText = row.querySelector('td:nth-child(6)')?.textContent || '¥0';
+                const price = parseFloat(priceText.replace(/[¥,]/g, '')) || 0;
+                const qty = parseFloat(qtyInput?.value) || 0;
+                
+                // 更新小计
+                const subtotal = qty * price;
+                const subtotalCell = row.querySelector('td:nth-child(7)');
+                if (subtotalCell) {
+                    subtotalCell.textContent = '¥' + subtotal.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+                }
+                
+                totalQty += qty;
+                totalAmount += subtotal;
+            });
+            
+            document.getElementById('inboundQtyTotal').value = totalQty + ' 件';
+            document.getElementById('inboundAmountTotal').value = '¥' + totalAmount.toLocaleString('zh-CN', {minimumFractionDigits: 2});
+        }
+    </script>
+</body>
+</html>

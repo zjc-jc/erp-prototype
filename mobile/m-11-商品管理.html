@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>商品管理 - 进销存系统</title>
+    <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <div class="header-left">
+            <span class="back-btn" style="cursor: pointer;">←</span>
+            <span class="header-title">商品管理</span>
+        </div>
+        <div class="header-right">
+            <div class="header-icon">🔍</div>
+            <div class="header-icon">➕</div>
+        </div>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- 搜索栏 -->
+        <div class="search-bar">
+            <span>🔍</span>
+            <input type="text" placeholder="搜索商品名称、SKU...">
+        </div>
+
+        <!-- 筛选栏 -->
+        <div class="filter-bar">
+            <div class="filter-chip active">全部</div>
+            <div class="filter-chip">库存紧张</div>
+            <div class="filter-chip">库存充足</div>
+            <div class="filter-chip">电子产品</div>
+            <div class="filter-chip">办公用品</div>
+        </div>
+
+        <!-- 商品列表 -->
+        <div class="product-card" onclick="openModal('productDetail')">
+            <div class="product-header">
+                <div>
+                    <div class="product-name">笔记本电脑 Pro 15</div>
+                    <div class="product-sku">SKU: NB-PRO15-001</div>
+                </div>
+                <div class="product-price">¥8,999</div>
+            </div>
+            <div class="product-info">
+                <span>库存: <strong class="product-stock low">12件</strong></span>
+                <span>分类: 电子产品</span>
+            </div>
+            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="event.stopPropagation(); openModal('purchaseModal')">发起采购</button>
+                <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();">编辑</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-header">
+                <div>
+                    <div class="product-name">无线蓝牙鼠标</div>
+                    <div class="product-sku">SKU: MS-BT-002</div>
+                </div>
+                <div class="product-price">¥129</div>
+            </div>
+            <div class="product-info">
+                <span>库存: <strong class="product-stock">256件</strong></span>
+                <span>分类: 电子产品</span>
+            </div>
+            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                <button class="btn btn-primary btn-sm" style="flex: 1;">发起采购</button>
+                <button class="btn btn-secondary btn-sm">编辑</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-header">
+                <div>
+                    <div class="product-name">办公椅 人体工学款</div>
+                    <div class="product-sku">SKU: CH-ERG-003</div>
+                </div>
+                <div class="product-price">¥1,599</div>
+            </div>
+            <div class="product-info">
+                <span>库存: <strong class="product-stock low">5件</strong></span>
+                <span>分类: 办公家具</span>
+            </div>
+            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                <button class="btn btn-primary btn-sm" style="flex: 1; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);">发起采购</button>
+                <button class="btn btn-secondary btn-sm">编辑</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-header">
+                <div>
+                    <div class="product-name">A4打印纸 500张/包</div>
+                    <div class="product-sku">SKU: PA-A4-004</div>
+                </div>
+                <div class="product-price">¥35</div>
+            </div>
+            <div class="product-info">
+                <span>库存: <strong class="product-stock">1,200件</strong></span>
+                <span>分类: 办公用品</span>
+            </div>
+            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                <button class="btn btn-primary btn-sm" style="flex: 1;">发起采购</button>
+                <button class="btn btn-secondary btn-sm">编辑</button>
+            </div>
+        </div>
+
+        <div class="product-card">
+            <div class="product-header">
+                <div>
+                    <div class="product-name">机械键盘 青轴</div>
+                    <div class="product-sku">SKU: KB-MEC-005</div>
+                </div>
+                <div class="product-price">¥399</div>
+            </div>
+            <div class="product-info">
+                <span>库存: <strong class="product-stock">89件</strong></span>
+                <span>分类: 电子产品</span>
+            </div>
+            <div style="margin-top: 12px; display: flex; gap: 8px;">
+                <button class="btn btn-primary btn-sm" style="flex: 1;">发起采购</button>
+                <button class="btn btn-secondary btn-sm">编辑</button>
+            </div>
+        </div>
+
+        <!-- 加载更多 -->
+        <div class="load-more">点击加载更多...</div>
+    </main>
+
+    <!-- 浮动按钮 -->
+    <button class="fab" onclick="openModal('addProductModal')">+</button>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav"></nav>
+
+    <!-- 商品详情弹窗 -->
+    <div class="modal-overlay" id="productDetail">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">商品详情</span>
+                <button class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="width: 120px; height: 120px; background: #f5f7fa; border-radius: 12px; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 48px;">💻</div>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 18px; font-weight: 600; color: #333;">笔记本电脑 Pro 15</div>
+                    <div style="font-size: 13px; color: #999; margin-top: 4px;">SKU: NB-PRO15-001</div>
+                </div>
+
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #666;">销售价</span>
+                        <span style="font-weight: 600; color: #f44336; font-size: 18px;">¥8,999</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="color: #666;">成本价</span>
+                        <span style="font-weight: 500;">¥7,200</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #666;">库存数量</span>
+                        <span style="font-weight: 500; color: #f44336;">12件 (库存紧张)</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 13px; color: #666; margin-bottom: 8px;">商品分类</div>
+                    <div style="font-size: 14px;">电子产品 / 电脑 / 笔记本</div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 13px; color: #666; margin-bottom: 8px;">商品规格</div>
+                    <div style="font-size: 14px; line-height: 1.8;">
+                        CPU: Intel i7-12700H<br>
+                        内存: 16GB DDR5<br>
+                        硬盘: 512GB SSD<br>
+                        屏幕: 15.6寸 2K
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" style="flex: 1;">编辑</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="closeModal('productDetail'); openModal('purchaseModal');">发起采购</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发起采购弹窗 -->
+    <div class="modal-overlay" id="purchaseModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">发起采购申请</span>
+                <button class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">商品名称</label>
+                    <input type="text" class="form-input" value="笔记本电脑 Pro 15" readonly style="background: #f5f7fa;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">当前库存</label>
+                    <input type="text" class="form-input" value="12件" readonly style="background: #f5f7fa;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">采购数量</label>
+                    <input type="number" class="form-input" placeholder="请输入采购数量">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">建议供应商</label>
+                    <select class="form-select">
+                        <option>请选择供应商</option>
+                        <option>深圳科技有限公司</option>
+                        <option>广州数码商贸</option>
+                        <option>北京电子设备公司</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">备注说明</label>
+                    <textarea class="form-textarea" placeholder="请输入备注信息"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('purchaseModal')">取消</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="closeModal('purchaseModal'); showToast('采购申请已提交')">提交申请</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增商品弹窗 -->
+    <div class="modal-overlay" id="addProductModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">新增商品</span>
+                <button class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label required">商品名称</label>
+                    <input type="text" class="form-input" placeholder="请输入商品名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">商品SKU</label>
+                    <input type="text" class="form-input" placeholder="请输入商品SKU">
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">商品分类</label>
+                    <select class="form-select">
+                        <option>请选择分类</option>
+                        <option>电子产品</option>
+                        <option>办公用品</option>
+                        <option>办公家具</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label required">销售价格</label>
+                    <input type="number" class="form-input" placeholder="请输入销售价格">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">成本价格</label>
+                    <input type="number" class="form-input" placeholder="请输入成本价格">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">初始库存</label>
+                    <input type="number" class="form-input" placeholder="请输入初始库存数量">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('addProductModal')">取消</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="closeModal('addProductModal'); showToast('商品添加成功')">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/mobile.js"></script>
+    <script>
+        // 筛选标签点击
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

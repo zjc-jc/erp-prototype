@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>采购申请 - 进销存系统</title>
+    <link rel="stylesheet" href="css/common.css">
+</head>
+<body>
+    <div class="sidebar"></div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="breadcrumb"></div>
+            <div class="toolbar">
+                <button class="btn" data-action="refresh">🔄 刷新</button>
+                <button class="btn" data-action="export">📤 导出</button>
+                <button class="btn" data-action="print">🖨️ 打印</button>
+                <button class="btn btn-primary" data-action="open-modal" data-modal="addModal">➕ 新建申请</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <div class="table-title">采购申请列表</div>
+                    <div class="table-actions">
+                        <div class="search-box">
+                            <input type="text" placeholder="搜索申请单...">
+                        </div>
+                        <button class="btn">🔍 筛选</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;"><input type="checkbox"></th>
+                                <th style="width: 140px;">申请单号</th>
+                                <th>申请人</th>
+                                <th>部门</th>
+                                <th>物品名称</th>
+                                <th style="width: 80px;">数量</th>
+                                <th style="width: 100px;">申请日期</th>
+                                <th style="width: 100px;">状态</th>
+                                <th style="width: 100px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PR20260402001</td>
+                                <td>张剑春</td>
+                                <td>研发部</td>
+                                <td>联想 ThinkPad X1 Carbon</td>
+                                <td>5</td>
+                                <td>2026-04-02</td>
+                                <td><span class="status-badge status-pending">⏳ 审批中</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                    <button class="btn btn-sm">编辑</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PR20260401002</td>
+                                <td>李爽爽</td>
+                                <td>市场部</td>
+                                <td>戴尔显示器 27 寸</td>
+                                <td>10</td>
+                                <td>2026-04-01</td>
+                                <td><span class="status-badge status-approved">✓ 已通过</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PR20260331003</td>
+                                <td>黄炳克</td>
+                                <td>行政部</td>
+                                <td>罗技键盘鼠标套装</td>
+                                <td>20</td>
+                                <td>2026-03-31</td>
+                                <td><span class="status-badge status-rejected">✗ 已驳回</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PR20260330004</td>
+                                <td>施宙</td>
+                                <td>研发部</td>
+                                <td>机械硬盘 4TB</td>
+                                <td>8</td>
+                                <td>2026-03-30</td>
+                                <td><span class="status-badge status-approved">✓ 已通过</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PR20260329005</td>
+                                <td>曾友锋</td>
+                                <td>设计部</td>
+                                <td>苹果 MacBook Pro</td>
+                                <td>3</td>
+                                <td>2026-03-29</td>
+                                <td><span class="status-badge status-pending">⏳ 审批中</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                    <button class="btn btn-sm">编辑</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PR20260328006</td>
+                                <td>向铎</td>
+                                <td>测试部</td>
+                                <td>测试手机 iPhone 15</td>
+                                <td>5</td>
+                                <td>2026-03-28</td>
+                                <td><span class="status-badge status-approved">✓ 已通过</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PR20260327007</td>
+                                <td>王显龙</td>
+                                <td>运维部</td>
+                                <td>服务器内存条 32GB</td>
+                                <td>16</td>
+                                <td>2026-03-27</td>
+                                <td><span class="status-badge status-draft">📝 草稿</span></td>
+                                <td>
+                                    <button class="btn btn-sm">编辑</button>
+                                    <button class="btn btn-sm btn-danger">删除</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>PR20260326008</td>
+                                <td>黄建冬</td>
+                                <td>研发部</td>
+                                <td>无线网卡 AX200</td>
+                                <td>30</td>
+                                <td>2026-03-26</td>
+                                <td><span class="status-badge status-approved">✓ 已通过</span></td>
+                                <td>
+                                    <button class="btn btn-sm">查看</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-info">共 8 条记录</div>
+                    <div class="pagination-controls">
+                        <button class="page-btn">‹</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">›</button>
+                        <span style="color: #666; margin-left: 8px;">20 条/页</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新建采购申请弹窗 -->
+    <div id="addModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">新建采购申请</div>
+                <button class="modal-close" data-action="close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label required">申请人</label>
+                        <input type="text" class="form-input" value="张剑春" readonly>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label required">所属部门</label>
+                        <select class="form-input">
+                            <option>研发部</option>
+                            <option>市场部</option>
+                            <option>行政部</option>
+                            <option>设计部</option>
+                            <option>测试部</option>
+                            <option>运维部</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label required">期望到货日期</label>
+                        <input type="date" class="form-input" value="2026-04-20">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">优先级</label>
+                        <select class="form-input">
+                            <option>普通</option>
+                            <option>紧急</option>
+                            <option>非常紧急</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label">申请物品清单</label>
+                    <table class="items-table" id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 40%;">物品名称</th>
+                                <th style="width: 20%;">规格型号</th>
+                                <th style="width: 15%;">数量</th>
+                                <th style="width: 25%;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" placeholder="输入物品名称"></td>
+                                <td><input type="text" placeholder="规格型号"></td>
+                                <td><input type="number" value="1" min="1"></td>
+                                <td><button class="btn btn-sm" onclick="deleteTableRow(this)">🗑️ 删除</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="add-row-btn" onclick="addItemRow()">+ 添加一行</button>
+                </div>
+                <div class="form-field">
+                    <label class="form-label required">用途说明</label>
+                    <textarea class="form-textarea" placeholder="请详细说明物品的使用用途"></textarea>
+                </div>
+                <div class="form-field">
+                    <label class="form-label">备注说明</label>
+                    <textarea class="form-textarea" placeholder="其他需要说明的信息"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" data-action="close-modal">取消</button>
+                <button class="btn btn-warning">💾 保存草稿</button>
+                <button class="btn btn-primary">✅ 提交申请</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script>
+        function addItemRow() {
+            const tbody = document.querySelector('#itemsTable tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" placeholder="输入物品名称"></td>
+                <td><input type="text" placeholder="规格型号"></td>
+                <td><input type="number" value="1" min="1"></td>
+                <td><button class="btn btn-sm" onclick="deleteTableRow(this)">🗑️ 删除</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+    </script>
+</body>
+</html>

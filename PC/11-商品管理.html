@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品管理 - 进销存系统</title>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .top-bar {
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+        .breadcrumb { font-size: 14px; color: #666; }
+        .breadcrumb-separator { margin: 0 8px; color: #ccc; }
+        .toolbar { display: flex; gap: 12px; align-items: center; }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn:hover { border-color: #667eea; color: #667eea; }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover { opacity: 0.9; }
+        .content-area { flex: 1; padding: 24px; overflow: auto; }
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .table-toolbar {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .table-title { font-size: 16px; font-weight: 600; color: #1a1a1a; }
+        .table-actions { display: flex; gap: 8px; }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        thead { background: #f5f7fa; }
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e8e8e8;
+            white-space: nowrap;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #666;
+        }
+        tbody tr:hover { background: #f5f7ff; }
+        .stock-low { color: #f44336; font-weight: 600; }
+        .stock-normal { color: #4caf50; }
+        .btn-purchase {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-purchase:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        .btn-purchase.highlight {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            color: white;
+            border: none;
+            font-weight: 500;
+        }
+        .btn-purchase.highlight:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid #e8e8e8;
+        }
+        .pagination-info { font-size: 14px; color: #666; }
+        .pagination-controls { display: flex; gap: 8px; align-items: center; }
+        .page-btn {
+            width: 32px; height: 32px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .page-btn:hover { border-color: #667eea; color: #667eea; }
+        .page-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .modal-title { font-size: 18px; font-weight: 600; }
+        .modal-close {
+            width: 32px; height: 32px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 18px;
+            color: white;
+            transition: all 0.2s;
+        }
+        .modal-close:hover { background: rgba(255, 255, 255, 0.3); }
+        .modal-body { flex: 1; overflow-y: auto; padding: 24px; }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .form-field { display: flex; flex-direction: column; gap: 6px; }
+        .form-label { font-size: 13px; color: #666; font-weight: 500; }
+        .form-input {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+        }
+        .form-input:focus { outline: none; border-color: #667eea; }
+        .form-textarea {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar"></aside>
+
+    <main class="main-content">
+        <div class="top-bar">
+            <div class="breadcrumb"></div>
+            <div class="toolbar">
+                <button class="btn" data-action="refresh">🔄 刷新</button>
+                <button class="btn" data-action="export">📤 导出</button>
+                <button class="btn btn-primary" onclick="openModal()">➕ 新增商品</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="table-container">
+                <div class="table-toolbar">
+                    <div class="table-title">商品列表</div>
+                    <div class="table-actions">
+                        <input type="text" placeholder="🔍 搜索商品..." style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; width: 200px;">
+                        <button class="btn">🔍 筛选</button>
+                        <button class="btn">📊 分类</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 100px;">商品编号</th>
+                                <th>商品名称</th>
+                                <th>规格型号</th>
+                                <th>单位</th>
+                                <th>成本价</th>
+                                <th>销售价</th>
+                                <th>当前库存</th>
+                                <th>状态</th>
+                                <th style="width: 100px;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>PROD001</td>
+                                <td>联想 ThinkPad X1 Carbon</td>
+                                <td>i7/16GB/512GB SSD</td>
+                                <td>台</td>
+                                <td>¥7,500</td>
+                                <td>¥9,500</td>
+                                <td class="stock-low">12</td>
+                                <td><span class="stock-low">● 库存紧张</span></td>
+                                <td><button class="btn-purchase highlight" onclick="initPurchase('PROD001', '联想 ThinkPad X1 Carbon', 12)">发起采购</button></td>
+                            </tr>
+                            <tr>
+                                <td>PROD002</td>
+                                <td>戴尔显示器 27 寸</td>
+                                <td>P2719H IPS</td>
+                                <td>台</td>
+                                <td>¥1,500</td>
+                                <td>¥2,000</td>
+                                <td class="stock-normal">45</td>
+                                <td><span class="stock-normal">● 充足</span></td>
+                                <td><button class="btn-purchase" onclick="initPurchase('PROD002', '戴尔显示器 27 寸', 45)">发起采购</button></td>
+                            </tr>
+                            <tr>
+                                <td>PROD003</td>
+                                <td>罗技键盘鼠标套装</td>
+                                <td>MK270 无线</td>
+                                <td>套</td>
+                                <td>¥250</td>
+                                <td>¥320</td>
+                                <td class="stock-normal">88</td>
+                                <td><span class="stock-normal">● 充足</span></td>
+                                <td><button class="btn-purchase" onclick="initPurchase('PROD003', '罗技键盘鼠标套装', 88)">发起采购</button></td>
+                            </tr>
+                            <tr>
+                                <td>PROD004</td>
+                                <td>机械硬盘 4TB</td>
+                                <td>希捷酷鱼</td>
+                                <td>块</td>
+                                <td>¥600</td>
+                                <td>¥750</td>
+                                <td class="stock-low">8</td>
+                                <td><span class="stock-low">● 库存紧张</span></td>
+                                <td><button class="btn-purchase highlight" onclick="initPurchase('PROD004', '机械硬盘 4TB', 8)">发起采购</button></td>
+                            </tr>
+                            <tr>
+                                <td>PROD005</td>
+                                <td>HP LaserJet 打印机</td>
+                                <td>M1005 激光</td>
+                                <td>台</td>
+                                <td>¥1,800</td>
+                                <td>¥2,200</td>
+                                <td class="stock-normal">23</td>
+                                <td><span class="stock-normal">● 充足</span></td>
+                                <td><button class="btn-purchase" onclick="initPurchase('PROD005', 'HP LaserJet 打印机', 23)">发起采购</button></td>
+                            </tr>
+                            <tr>
+                                <td>PROD006</td>
+                                <td>金士顿内存条 16GB</td>
+                                <td>DDR4 3200</td>
+                                <td>条</td>
+                                <td>¥350</td>
+                                <td>¥450</td>
+                                <td class="stock-low">5</td>
+                                <td><span class="stock-low">● 库存紧张</span></td>
+                                <td><button class="btn-purchase highlight" onclick="initPurchase('PROD006', '金士顿内存条 16GB', 5)">发起采购</button></td>
+                            </tr>
+                            <tr>
+                                <td>PROD007</td>
+                                <td>西数固态硬盘 1TB</td>
+                                <td>Blue SN570</td>
+                                <td>块</td>
+                                <td>¥480</td>
+                                <td>¥599</td>
+                                <td class="stock-normal">32</td>
+                                <td><span class="stock-normal">● 充足</span></td>
+                                <td><button class="btn-purchase" onclick="initPurchase('PROD007', '西数固态硬盘 1TB', 32)">发起采购</button></td>
+                            </tr>
+                            <tr>
+                                <td>PROD008</td>
+                                <td>华为无线鼠标</td>
+                                <td>AF30</td>
+                                <td>个</td>
+                                <td>¥80</td>
+                                <td>¥129</td>
+                                <td class="stock-low">6</td>
+                                <td><span class="stock-low">● 库存紧张</span></td>
+                                <td><button class="btn-purchase highlight" onclick="initPurchase('PROD008', '华为无线鼠标', 6)">发起采购</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div class="pagination-info">显示 1-5 条，共 56 条记录</div>
+                    <div class="pagination-controls">
+                        <button class="page-btn">◀</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">▶</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="productModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">新增商品</h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">商品名称 *</label>
+                        <input type="text" class="form-input" placeholder="请输入商品名称">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">商品编号</label>
+                        <input type="text" class="form-input" placeholder="自动生成">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">规格型号 *</label>
+                        <input type="text" class="form-input" placeholder="请输入规格型号">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">计量单位 *</label>
+                        <select class="form-input">
+                            <option value="">请选择单位</option>
+                            <option value="台">台</option>
+                            <option value="套">套</option>
+                            <option value="个">个</option>
+                            <option value="块">块</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">成本价 *</label>
+                        <input type="number" class="form-input" placeholder="¥" step="0.01">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">销售价 *</label>
+                        <input type="number" class="form-input" placeholder="¥" step="0.01">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">安全库存</label>
+                        <input type="number" class="form-input" placeholder="最低库存预警值">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">商品分类</label>
+                        <select class="form-input">
+                            <option value="">请选择分类</option>
+                            <option value="computer">电脑整机</option>
+                            <option value="accessory">配件外设</option>
+                            <option value="storage">存储设备</option>
+                            <option value="printer">打印设备</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label">商品描述</label>
+                    <textarea class="form-textarea" placeholder="请输入商品详细描述"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn" onclick="closeModal()">取消</button>
+                    <button class="btn btn-primary">保存商品</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发起采购弹窗 -->
+    <div class="modal-overlay" id="purchaseModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">发起采购申请</h3>
+                <button class="modal-close" onclick="closePurchaseModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">商品编号</label>
+                        <input type="text" class="form-input" id="purchase-productId" readonly style="background: #f5f5f5;">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">商品名称</label>
+                        <input type="text" class="form-input" id="purchase-productName" readonly style="background: #f5f5f5;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">当前库存</label>
+                        <input type="text" class="form-input" id="purchase-currentStock" readonly style="background: #f5f5f5;">
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">建议采购数量 *</label>
+                        <input type="number" class="form-input" id="purchase-quantity" placeholder="请输入采购数量" min="1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-field">
+                        <label class="form-label">供应商</label>
+                        <select class="form-input" id="purchase-supplier">
+                            <option value="">请选择供应商</option>
+                            <option value="SUP001">北京联想总代理</option>
+                            <option value="SUP002">戴尔授权经销商</option>
+                            <option value="SUP003">罗技官方旗舰店</option>
+                            <option value="SUP004">希捷硬盘专营店</option>
+                            <option value="SUP005">惠普打印机专卖店</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">期望到货日期</label>
+                        <input type="date" class="form-input" id="purchase-expectedDate">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label class="form-label">备注说明</label>
+                    <textarea class="form-textarea" id="purchase-remark" placeholder="请输入采购备注说明"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button class="btn" onclick="closePurchaseModal()">取消</button>
+                    <button class="btn btn-primary" onclick="submitPurchase()">提交采购申请</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/common.js"></script>
+    <script>
+        function openModal() {
+            document.getElementById('productModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal() {
+            document.getElementById('productModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // 发起采购
+        function initPurchase(productId, productName, currentStock) {
+            document.getElementById('purchase-productId').value = productId;
+            document.getElementById('purchase-productName').value = productName;
+            document.getElementById('purchase-currentStock').value = currentStock;
+            document.getElementById('purchase-quantity').value = '';
+            document.getElementById('purchase-supplier').value = '';
+            document.getElementById('purchase-expectedDate').value = '';
+            document.getElementById('purchase-remark').value = '';
+            document.getElementById('purchaseModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closePurchaseModal() {
+            document.getElementById('purchaseModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        function submitPurchase() {
+            const productId = document.getElementById('purchase-productId').value;
+            const productName = document.getElementById('purchase-productName').value;
+            const quantity = document.getElementById('purchase-quantity').value;
+            
+            if (!quantity || quantity <= 0) {
+                alert('请输入有效的采购数量');
+                return;
+            }
+            
+            alert(`采购申请已提交！\n\n商品: ${productName}\n编号: ${productId}\n采购数量: ${quantity}`);
+            closePurchaseModal();
+        }
+    </script>
+</body>
+</html>
